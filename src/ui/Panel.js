@@ -1,0 +1,1 @@
+//optional: panel background helper
