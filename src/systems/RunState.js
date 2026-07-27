@@ -1,12 +1,7 @@
-
+import { createPlayer } from "../data/player";
 
 export const RunState = {
-    player: {
-      health: 30,
-      maxHealth: 30,
-      stamina: 5,
-      maxStamina: 5,
-    },
+    player: createPlayer(),
   
     progress: {
       currentNodeId: 1,

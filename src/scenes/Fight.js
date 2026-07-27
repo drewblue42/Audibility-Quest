@@ -53,7 +53,6 @@ export default class Fight extends Phaser.Scene {
 
 
   buildFightScene() {
-    this.add.
 
     this.add.text(50, 30, "Practice Fight", {
       fontSize: "32px",
@@ -180,27 +179,27 @@ export default class Fight extends Phaser.Scene {
   }
 
   setupKeyboardControls() {
-    console.log("Keyboard controls set up");
+  console.log("Keyboard controls set up");
 
-    this.input.keyboard.on("keydown", (event) => {
-      console.log("KEYDOWN:", event.key, event.code);
+  this.input.keyboard.on("keydown", (event) => {
+    console.log("KEYDOWN:", event.key, event.code);
 
-      if (this.fightEnded) return;
+    if (this.fightEnded) return;
 
-      if (event.code === "Enter" || event.code === "Space") {
-        this.endFight(true);
-        return;
-      }
+    if (event.code === "Enter" || event.code === "Space") {
+      this.endFight(true);
+      return;
+    }
 
-      if (!this.roundReady) return;
+    if (!this.roundReady) return;
 
-      const num = this.getNumpadNumber(event);
+    const damageToMonster = this.getNumpadNumber(event);
 
-      if (num >= 0 && num <= 5) {
-        this.resolveResearcherDamage(num);
-      }
-    });
-  }
+    if (damageToMonster >= 0 && damageToMonster <= 5) {
+      this.resolveResearcherDamage(damageToMonster);
+    }
+  });
+}
 
   getNumpadNumber(event) {
     const allowed = ["0", "1", "2", "3", "4", "5"];
@@ -218,58 +217,82 @@ export default class Fight extends Phaser.Scene {
     return Number.NaN;
   }
 
-  resolveResearcherDamage(monsterDamage) {
+  resolveResearcherDamage(damageToMonster) {
     if (this.fightEnded) return;
-
-    const playerDamage = 5 - monsterDamage;
-
+  
+    const damageToPlayer = 5 - damageToMonster;
+  
     this.roundReady = false;
-
-    RunState.damagePlayer(playerDamage);
-
+  
+    RunState.damagePlayer(damageToPlayer);
+  
     this.currentMonster.health = Math.max(
       0,
-      this.currentMonster.health - monsterDamage
+      this.currentMonster.health - damageToMonster
     );
-
+  
     this.healthText.setText(
       `❤️ ${RunState.player.health}/${RunState.player.maxHealth}`
     );
-
+  
     this.monsterHealthText.setText(
       `HP: ${this.currentMonster.health}/${this.currentMonster.maxHealth}`
     );
-
+  
     this.damageText.setText(
-      `Monster -${monsterDamage}     Player -${playerDamage}`
+      `Monster -${damageToMonster}     Player -${damageToPlayer}`
     );
-
-    this.animateAttack(monsterDamage);
-
-    if (this.currentMonster.health <= 0) {
+  
+    this.animateAttack(damageToMonster);
+  
+    const playerDefeated = RunState.player.health <= 0;
+    const monsterDefeated = this.currentMonster.health <= 0;
+  
+    if (playerDefeated && monsterDefeated) {
+      this.statusText.setText("Both the player and monster were defeated!");
+  
       this.time.delayedCall(700, () => {
         this.endFight(true);
       });
+  
       return;
     }
-
+  
+    if (playerDefeated) {
+      this.statusText.setText("The player was defeated!");
+  
+      this.time.delayedCall(700, () => {
+        this.playerDefeated();
+      });
+  
+      return;
+    }
+  
+    if (monsterDefeated) {
+      this.time.delayedCall(700, () => {
+        this.endFight(true);
+      });
+  
+      return;
+    }
+  
     this.time.delayedCall(1200, () => {
       if (this.fightEnded) return;
-
+  
       this.damageText.setText("");
       this.statusText.setText("Choose one word from each column.");
       this.resetWordGrid();
     });
   }
 
-  animateAttack(monsterDamage) {
+  animateAttack(damageToMonster) {
     const originalPlayerX = this.player.x;
     const originalPlayerY = this.player.y;
     const originalMonsterX = this.monster.x;
-
-    if (monsterDamage === 0) {
+  
+    if (damageToMonster === 0) {
       this.statusText.setText("The player attacks, but misses!");
-
+  
       this.tweens.add({
         targets: this.player,
         x: originalPlayerX + 150,
@@ -283,14 +306,14 @@ export default class Fight extends Phaser.Scene {
           this.player.y = originalPlayerY;
         },
       });
-
+  
       this.cameras.main.shake(200, 0.01);
       return;
     }
-
-    if (monsterDamage === 5) {
+  
+    if (damageToMonster === 5) {
       this.statusText.setText("Strong hit!");
-
+  
       this.tweens.add({
         targets: this.player,
         x: originalPlayerX + 720,
@@ -300,7 +323,7 @@ export default class Fight extends Phaser.Scene {
           this.player.x = originalPlayerX;
         },
       });
-
+  
       this.tweens.add({
         targets: this.monster,
         x: originalMonsterX + 25,
@@ -311,12 +334,14 @@ export default class Fight extends Phaser.Scene {
           this.monster.x = originalMonsterX;
         },
       });
-
+  
       return;
     }
-
-    this.statusText.setText(`The player hits for ${monsterDamage} damage.`);
-
+  
+    this.statusText.setText(
+      `The player hits for ${damageToMonster} damage.`
+    );
+  
     this.tweens.add({
       targets: this.player,
       x: originalPlayerX + 620,
@@ -326,7 +351,7 @@ export default class Fight extends Phaser.Scene {
         this.player.x = originalPlayerX;
       },
     });
-
+  
     this.tweens.add({
       targets: this.monster,
       alpha: 0.35,
@@ -335,6 +360,32 @@ export default class Fight extends Phaser.Scene {
       onComplete: () => {
         this.monster.alpha = 1;
       },
+    });
+  }
+
+  playerDefeated() {
+    if (this.fightEnded) return;
+  
+    this.fightEnded = true;
+    this.roundReady = false;
+  
+    this.statusText.setText("You were defeated!");
+    this.damageText.setText("");
+  
+    if (this.grid) {
+      this.grid.destroy();
+      this.grid = null;
+    }
+  
+    this.tweens.add({
+      targets: this.player,
+      alpha: 0,
+      y: this.player.y + 80,
+      duration: 700,
+    });
+  
+    this.time.delayedCall(1200, () => {
+      this.scene.start(this.returnTo);
     });
   }
 
