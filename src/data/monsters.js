@@ -2,22 +2,20 @@
 
 export const MONSTERS = [
     {
-      name: "Dummy Goblin",
+      name: "Skeleton Warrior",
       maxHealth: 12,
-      color: 0xb94a48,
-    },
-    {
-      name: "Training Slime",
-      maxHealth: 16,
-      color: 0x4caf50,
-    },
-    {
-      name: "Wooden Beast",
-      maxHealth: 20,
-      color: 0x8b5a2b,
+  
+      textureKey: "skeletonIdle",
+  
+      animations: {
+        idle: "skeleton-idle",
+        attack: "skeleton-attack",
+      },
+  
+      scale: 6,
     },
   ];
-  
+
   export function getRandomMonster() {
     const index = Math.floor(Math.random() * MONSTERS.length);
     return MONSTERS[index];

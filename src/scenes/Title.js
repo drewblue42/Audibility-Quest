@@ -1,59 +1,69 @@
 import Phaser from "phaser";
 import Button from "../ui/Button";
-
-//title + instructions
+import { titleContent } from "../data/titleContent";
 
 export default class Title extends Phaser.Scene {
+  constructor() {
+    super({ key: "title" });
+  }
 
-    constructor ()
-    {
-        super({ key: 'title' })
-        ///////adding configurations to the file
-        // super({
-        //     key: 'Level1',
-        //     physics: {
-        //         arcade: {
-        //             debug: true,
-        //             gravity: { y: 200 }
-        //         }
-        //     }
-        // });
-        //////////// Can also be used 
-        // super({
-        //     key: 'boot',
-        //     files: [
-        //         { type: 'image', key: 'bar', url: 'loaderBar.png' },
-        //         { type: 'image', key: 'bg', url: 'background.png' }
-        //     ]
-        // });
-    }
+  preload() {
+    const skyUrl = new URL(
+      "../assets/images/slay_spire_intro.jpg",
+      import.meta.url
+    ).toString();
 
-    preload ()
-    {
-       
-    }
+    this.load.image("sky", skyUrl);
+  }
 
-    create () // only valid method to be considered a "scene"
-    {
-        const bg = this.add.image(0, 0, "sky").setOrigin(0);
+  create() {
+    const bg = this.add
+      .image(
+        this.cameras.main.centerX,
+        this.cameras.main.centerY,
+        "sky"
+      )
+      .setOrigin(0.5);
 
-        const scaleX = this.cameras.main.width / bg.width;
-        const scaleY = this.cameras.main.height / bg.height;
-        const scale = Math.max(scaleX, scaleY);
+    const scaleX = this.cameras.main.width / bg.width;
+    const scaleY = this.cameras.main.height / bg.height;
+    const scale = Math.max(scaleX, scaleY);
 
-        bg.setScale(scale);
+    bg.setScale(scale);
 
+    this.add
+      .text(
+        this.cameras.main.centerX,
+        140,
+        titleContent.gameTitle,
+        {
+          fontSize: "52px",
+          color: "#ffffff",
+          fontStyle: "bold",
+          stroke: "#000000",
+          strokeThickness: 6,
+        }
+      )
+      .setOrigin(0.5);
 
-
-        new Button(
-            this,
-            512,
-            620,
-            'Start Game',
-            () => {
-              this.scene.start('nodeMap');
-            }
-          );
-    }
-
+      new Button(
+        this,
+        this.cameras.main.centerX,
+        620,
+        titleContent.startButtonText,
+        () => {
+          this.scene.start('nodeMap');
+        }
+      );
+      
+    new Button(
+      this,
+      this.cameras.main.centerX,
+      680,
+      titleContent.instructionButtonText,
+      () => {
+        this.scene.start("InstructionsScreen");
+      }
+    );
+  }
 }
