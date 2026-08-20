@@ -1,17 +1,41 @@
+//ToDo add a way to remove connections when the player is past the position and the player has no way to travle there
+// 
+
 import Phaser from "phaser";
 import mapImage from "url:../assets/images/old_map1.jpg";
 import { getMapById } from "../data/mapNodeData.js";
+import { RunState } from "../systems/RunState.js";
 
 
 export default class NodeMap extends Phaser.Scene {
     constructor() {
         super({ key: "nodeMap" });
 
-        this.mapId = "map-1";
     }
 
     init(data) {
-        this.mapId = data.mapId ?? "map-1";
+
+        if (data?.mapId) {
+            RunState.setCurrentMap(data.mapId);
+        }
+
+        this.mapId = RunState.progress.currentMapId;
+
+        const mapData = getMapById(this.mapId);
+
+        if (data?.nodeId) {
+            const validNode = mapData.nodes.some(
+                node => node.id === data.nodeId
+            );
+
+            if (validNode) {
+                RunState.setCurrentNode(data.nodeId);
+            } else {
+                console.warn(`Invalid node ID: ${data.nodeId}`);
+            }
+        }
+
+        this.nodeId = RunState.progress.currentNodeId;
     }
 
     preload() {
@@ -50,9 +74,13 @@ export default class NodeMap extends Phaser.Scene {
             console.error(`Map not found: ${this.mapId}`);
             return;
         }
+
+        const reachableNodes = this.getReachableNodes(mapData)
+        console.log("reachableNodes: " + reachableNodes)
         this.createBackground(mapData.backgroundKey);
         this.createConnections(mapData);
-        this.createNodes(mapData);
+        this.createNodes(mapData, reachableNodes);
+
     }
 
     createBackground(backgroundKey) {
@@ -65,6 +93,15 @@ export default class NodeMap extends Phaser.Scene {
         const scale = Math.max(scaleX, scaleY);
 
         bg.setScale(scale);
+    }
+
+    getReachableNodes(mapData) {
+        const currentNode = RunState.progress.currentNodeId
+
+        return mapData.connections
+            .filter(connection => connection.from === currentNode)
+            .map(connection => connection.to)
+
     }
 
     getNodeIcon(node) {
@@ -87,7 +124,8 @@ export default class NodeMap extends Phaser.Scene {
     createConnections(mapData) {
         const graphics = this.add.graphics();
 
-        graphics.lineStyle(4, 0x000000, 0.7);
+        graphics.lineStyle(4, 0x000000, 0.2);
+        
 
         const nodeById = new Map(
             mapData.nodes.map((node) => [node.id, node])
@@ -110,17 +148,53 @@ export default class NodeMap extends Phaser.Scene {
             graphics.lineTo(toNode.x, toNode.y);
             graphics.strokePath();
         });
-    }
 
-    createNodes(mapData) {
-        mapData.nodes.forEach((node) => {
-            this.createNode(node, mapData);
+        graphics.lineStyle(4, 0x000000, 0.7);
+
+        const visibleConnections = mapData.connections.filter(
+            connection => connection.from === RunState.progress.currentNodeId)
+
+        console.log("nodebyID: " + visibleConnections)
+
+
+        visibleConnections.forEach((connection) => {
+            const fromNode = nodeById.get(connection.from);
+            const toNode = nodeById.get(connection.to);
+
+            if (!fromNode || !toNode) {
+                console.warn(
+                    `Invalid connection: ${connection.from} -> ${connection.to}`
+                );
+
+                return;
+            }
+
+            graphics.beginPath();
+            graphics.moveTo(fromNode.x, fromNode.y);
+            graphics.lineTo(toNode.x, toNode.y);
+            graphics.strokePath();
         });
     }
 
-    createNode(node, mapData) {
-        const isStartingNode =
-            node.id === mapData.startingNodeId;
+    createNodes(mapData, reachableNodes) {
+        mapData.nodes.forEach((node) => {
+            const isCurrentNode =
+                node.id === RunState.progress.currentNodeId;
+    
+            const isReachable =
+                reachableNodes.includes(node.id);
+    
+            this.createNode(
+                node,
+                mapData,
+                isReachable
+            );
+        });
+    }
+
+    createNode(node, mapData, isAvailable) {
+        const isCurrentNode =
+            node.id === RunState.progress.currentNodeId;
 
         const iconKey = this.getNodeIcon(node);
 
@@ -133,26 +207,30 @@ export default class NodeMap extends Phaser.Scene {
                 0.35
             );
         }
-
-        // if (isStartingNode) {
-        //     this.add.circle(
-        //         node.x,
-        //         node.y,
-        //         35,
-        //         0x00ff00,
-        //         0.25
-        //     );
-        // }
+        if (isCurrentNode) {
+            this.add.circle(
+                node.x,
+                node.y,
+                30,
+                0x00ff00,
+                0.35
+            );
+        }
 
         const icon = this.add
             .image(node.x, node.y, iconKey)
-            .setDisplaySize(42, 42)
-            .setInteractive({ useHandCursor: true });
+            .setDisplaySize(42, 42);
+        if (isAvailable) {
+            icon.setInteractive({ useHandCursor: true });
 
-        icon.on("pointerdown", () => {
-            this.handleNodeSelection(node);
-        });
+            icon.on("pointerdown", () => {
+                this.handleNodeSelection(node);
+            });
+        } else {
+            icon.setAlpha(0.3);
+        }
     }
+
 
     getNodeColor(node) {
         if (node.isCheckpoint) {
@@ -194,13 +272,14 @@ export default class NodeMap extends Phaser.Scene {
 
     handleNodeSelection(node) {
         this.cameras.main.shake(300);
+        RunState.setCurrentNode(node.id);
 
         this.time.delayedCall(300, () => {
             switch (node.type) {
                 case "fight":
                     this.scene.start("fight", {
                         nodeId: node.id,
-                        mapId: this.mapId,
+                        mapId: RunState.progress.currentMapId,
                         returnTo: "nodeMap",
                     });
                     break;
@@ -208,7 +287,7 @@ export default class NodeMap extends Phaser.Scene {
                 case "camp":
                     this.scene.start("campsite", {
                         nodeId: node.id,
-                        mapId: this.mapId,
+                        mapId: RunState.progress.currentMapId,
                         returnTo: "nodeMap",
                     });
                     break;
@@ -216,7 +295,7 @@ export default class NodeMap extends Phaser.Scene {
                 case "treasure":
                     this.scene.start("treasure", {
                         nodeId: node.id,
-                        mapId: this.mapId,
+                        mapId: RunState.progress.currentMapId,
                         returnTo: "nodeMap",
                     });
                     break;
@@ -224,7 +303,7 @@ export default class NodeMap extends Phaser.Scene {
                 case "boss":
                     this.scene.start("fight", {
                         nodeId: node.id,
-                        mapId: this.mapId,
+                        mapId: RunState.progress.currentMapId,
                         encounterType: "boss",
                         returnTo: "nodeMap",
                     });

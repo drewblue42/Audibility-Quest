@@ -3,7 +3,7 @@
 export const MONSTERS = [
     {
       name: "Skeleton Warrior",
-      maxHealth: 12,
+      maxHealth: 5,
   
       textureKey: "skeletonIdle",
   

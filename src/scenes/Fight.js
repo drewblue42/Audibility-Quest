@@ -173,7 +173,8 @@ export default class Fight extends Phaser.Scene {
       80,
       `❤️ ${RunState.player.health}/${RunState.player.maxHealth}`,
       {
-        fontSize: "28px",
+        fontSize: "32px",
+        color: "#FF0000"
       }
     );
 
@@ -182,7 +183,9 @@ export default class Fight extends Phaser.Scene {
       120,
       `Stamina: ${RunState.player.stamina}/${RunState.player.maxStamina}`,
       {
-        fontSize: "24px",
+        fontSize: "32px",
+        fontFamily: "italic bold sans-serif",
+        color: "#0AC200"
       }
     );
 

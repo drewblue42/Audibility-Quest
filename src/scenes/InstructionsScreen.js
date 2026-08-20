@@ -1,3 +1,5 @@
+//ToDo add a back button(add issue to github)
+import Button from "../ui/Button";
 import Phaser from "phaser";
 var platforms;
 import { titleContent } from "../data/titleContent";
@@ -71,6 +73,16 @@ export default class InstructionsScreen extends Phaser.Scene {
                 }
             )
             .setOrigin(0.5);
+
+            new Button(
+                this,
+                this.cameras.main.centerX,
+                800,
+                "Back to Title Screen",
+                () => {
+                  this.scene.start('title');
+                }
+              );
 
 
     }
