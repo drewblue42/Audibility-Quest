@@ -151,9 +151,7 @@ export default class Fight extends Phaser.Scene {
   buildFightScene() {
     this.createAnimations();
 
-    this.add.text(50, 30, "Practice Fight", {
-      fontSize: "32px",
-    });
+
 
     const monsterTemplate = getRandomMonster();
 
@@ -167,10 +165,13 @@ export default class Fight extends Phaser.Scene {
       animations: monsterTemplate.animations,
       scale: monsterTemplate.scale,
     };
+    this.add.text(670, 20, `${this.currentMonster.name}`, {
+      fontSize: "32px",
+    });
 
     this.healthText = this.add.text(
       50,
-      80,
+      40,
       `❤️ ${RunState.player.health}/${RunState.player.maxHealth}`,
       {
         fontSize: "32px",
@@ -179,8 +180,8 @@ export default class Fight extends Phaser.Scene {
     );
 
     this.staminaText = this.add.text(
-      50,
-      120,
+      220,
+      40,
       `Stamina: ${RunState.player.stamina}/${RunState.player.maxStamina}`,
       {
         fontSize: "32px",
@@ -209,7 +210,7 @@ export default class Fight extends Phaser.Scene {
 
     this.monster = this.add.sprite(
       1050,
-      250,
+      300,
       this.currentMonster.textureKey
     );
 
@@ -225,13 +226,13 @@ export default class Fight extends Phaser.Scene {
       .setVisible(false);
 
 
-    this.add.text(185, 405, "Player", {
+    this.add.text(185, 455, "Player", {
       fontSize: "20px",
     });
 
     this.monsterNameText = this.add.text(
-      980,
-      405,
+      960,
+      460,
       this.currentMonster.name,
       {
         fontSize: "20px",
@@ -240,16 +241,17 @@ export default class Fight extends Phaser.Scene {
 
     this.monsterHealthText = this.add.text(
       980,
-      435,
-      `HP: ${this.currentMonster.health}/${this.currentMonster.maxHealth}`,
+      20,
+      `❤️ ${this.currentMonster.health}/${this.currentMonster.maxHealth}`,
       {
         fontSize: "20px",
+        color: "#FF0000"
       }
     );
 
     this.statusText = this.add.text(
-      670,
-      70,
+      340,
+      520,
       "Choose one word from each column.",
       {
         fontSize: "22px",
@@ -257,7 +259,7 @@ export default class Fight extends Phaser.Scene {
     );
     this.reminderText = this.add.text(
       50,
-      900,
+      920,
       "Reminder: You can run if you can't hear the words, but running reduces stamina by 1.",
       {
         fontSize: "18px",
@@ -270,9 +272,72 @@ export default class Fight extends Phaser.Scene {
       this.runAway();
     });
 
-    new Button(this, 1180, 835, "Back", () => {
-      this.scene.start(this.returnTo);
-    });
+    //////////////////////////  Player health bar
+    const barX = 100;
+    const barY = 500;
+    const barWidth = 250;
+    const barHeight = 28;
+
+    // dark background
+    this.healthBarBackground = this.add
+      .rectangle(barX, barY, barWidth, barHeight, 0x222222)
+      .setOrigin(0, 0.5);
+
+    // red health
+    this.healthBar = this.add
+      .rectangle(barX, barY, barWidth, barHeight, 0xcc3333)
+      .setOrigin(0, 0.5);
+
+    // text over bar
+    this.healthText = this.add
+      .text(
+        barX + barWidth / 2,
+        barY,
+        `${RunState.player.health}/${RunState.player.maxHealth}`,
+        {
+          fontSize: "18px",
+          color: "#ffffff",
+          fontStyle: "bold",
+        }
+      )
+      .setOrigin(0.5);
+
+      ///////////////////////Enemy Health Bar///////////
+
+    const enemyBarX = 950;
+    const enemyBarY = 500;
+    const enemyBarWidth = 250;
+    const enemyBarHeight = 28;
+
+    // dark background
+    this.enemyHealthBarBackground = this.add
+      .rectangle(enemyBarX, enemyBarY, enemyBarWidth, enemyBarHeight, 0x222222)
+      .setOrigin(0, 0.5);
+
+    // red health
+    this.enemyHealthBar = this.add
+      .rectangle(enemyBarX, enemyBarY, enemyBarWidth, enemyBarHeight, 0xcc3333)
+      .setOrigin(0, 0.5);
+
+    // text over bar
+    this.enemyHealthText = this.add
+      .text(
+        enemyBarX + enemyBarWidth / 2,
+        enemyBarY,
+        `${this.currentMonster.health}/${this.currentMonster.maxHealth}`,
+        {
+          fontSize: "18px",
+          color: "#ffffff",
+          fontStyle: "bold",
+        }
+      )
+      .setOrigin(0.5);
+
+      this.updateEnemyHealthBar()
+      this.updateHealthBar()
+    // new Button(this, 1180, 835, "Back", () => {
+    //   this.scene.start(this.returnTo);
+    // });
   }
 
   playMonsterAttack(damageToPlayer) {
@@ -314,7 +379,7 @@ export default class Fight extends Phaser.Scene {
   buildWordGrid() {
     const questions = buildQuestionsFromResearchGrid();
 
-    this.grid = new GridOfButtons(this, 255, 500, {
+    this.grid = new GridOfButtons(this, 340, 550, {
       cols: WORD_GRID.length,
       rows: WORD_GRID[0].length,
 
@@ -412,12 +477,13 @@ export default class Fight extends Phaser.Scene {
     this.roundReady = false;
 
     RunState.damagePlayer(damageToPlayer);
+    this.updateHealthBar();
 
     this.currentMonster.health = Math.max(
       0,
       this.currentMonster.health - damageToMonster
     );
-
+    this.updateEnemyHealthBar()
     this.healthText.setText(
       `❤️ ${RunState.player.health}/${RunState.player.maxHealth}`
     );
@@ -544,41 +610,41 @@ export default class Fight extends Phaser.Scene {
 
         break;
 
-        case "normal":
-          this.time.delayedCall(350, () => {
-            this.playSwordEffect();
-          });
-        
-          this.tweens.add({
-            targets: this.player,
-            x: originalPlayerX + 620,
-            duration: 500,
-            yoyo: true,
-            onComplete: () => {
-              this.player.x = originalPlayerX;
-            },
-          });
-        
-          this.tweens.add({
-            targets: this.monster,
-            alpha: 0.35,
-            duration: 500,
-            yoyo: true,
-            onComplete: () => {
-              this.monster.alpha = 1;
-            },
-          });
-        
-          break;
-        
-        default:
-          console.warn(`Unknown combat behavior: ${score.behavior}`);
-        
-          this.statusText.setText(
-            `Unknown combat behavior: ${score.behavior}`
-          );
-        
-          break;
+      case "normal":
+        this.time.delayedCall(350, () => {
+          this.playSwordEffect();
+        });
+
+        this.tweens.add({
+          targets: this.player,
+          x: originalPlayerX + 620,
+          duration: 500,
+          yoyo: true,
+          onComplete: () => {
+            this.player.x = originalPlayerX;
+          },
+        });
+
+        this.tweens.add({
+          targets: this.monster,
+          alpha: 0.35,
+          duration: 500,
+          yoyo: true,
+          onComplete: () => {
+            this.monster.alpha = 1;
+          },
+        });
+
+        break;
+
+      default:
+        console.warn(`Unknown combat behavior: ${score.behavior}`);
+
+        this.statusText.setText(
+          `Unknown combat behavior: ${score.behavior}`
+        );
+
+        break;
     }
   }
 
@@ -624,6 +690,8 @@ export default class Fight extends Phaser.Scene {
     this.fightEnded = true;
     this.roundReady = false;
 
+    RunState.completeNode(this.nodeId);
+
     RunState.reduceStamina(1);
 
     this.staminaText.setText(
@@ -647,11 +715,36 @@ export default class Fight extends Phaser.Scene {
     });
   }
 
+  updateHealthBar() {
+    const healthPercent =
+      RunState.player.health / RunState.player.maxHealth;
+
+    this.healthBar.displayWidth =
+      250 * healthPercent;
+
+    this.healthText.setText(
+      `${RunState.player.health}/${RunState.player.maxHealth}`
+    );
+  }
+
+  updateEnemyHealthBar() {
+    const healthPercent =
+      this.currentMonster.health / this.currentMonster.maxHealth;
+
+    this.enemyHealthBar.displayWidth =
+      250 * healthPercent;
+
+    this.enemyHealthText.setText(
+      `${this.currentMonster.health}/${this.currentMonster.maxHealth}`
+    );
+  }
+
   endFight(showMonsterDeath = true) {
     if (this.fightEnded) return;
 
     this.fightEnded = true;
     this.roundReady = false;
+    RunState.completeNode(this.nodeId);
 
     this.statusText.setText("Fight ended.");
 
@@ -677,6 +770,7 @@ export default class Fight extends Phaser.Scene {
     });
   }
 }
+
 
 function buildQuestionsFromResearchGrid() {
   return WORD_GRID.map((columnChoices) => {

@@ -50,7 +50,7 @@ export const maps = [
       { id: 2, x: 110, y: 405, type: "fight", isCheckpoint: false },
 
       // Upper branch
-      { id: 3, x: 215, y: 190, type: "fight", isCheckpoint: false },
+      { id: 3, x: 215, y: 190, type: "camp", isCheckpoint: false },
 
       { id: 4, x: 350, y: 125, type: "fight", isCheckpoint: false },
       { id: 5, x: 425, y: 130, type: "fight", isCheckpoint: false },
@@ -119,7 +119,7 @@ export const maps = [
       { id: 49, x: 1165, y: 405, type: "fight", isCheckpoint: false },
 
       // Red colored node -> campsite
-      { id: 50, x: 1230, y: 395, type: "camp", isCheckpoint: false },
+      { id: 50, x: 1230, y: 395, type: "boss", isCheckpoint: false },
     ],
 
     connections: [

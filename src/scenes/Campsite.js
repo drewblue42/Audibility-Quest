@@ -1,6 +1,7 @@
 //restore HP or stamina
 import Phaser from "phaser";
 import Button from "../ui/Button";
+import { RunState } from "../systems/RunState";
 
 export default class Campsite extends Phaser.Scene {
   constructor() {
@@ -72,6 +73,7 @@ export default class Campsite extends Phaser.Scene {
   }
 
   restoreHealth() {
+    RunState.player.health = 3;
     console.log("Restore player health here");
   }
 
@@ -83,6 +85,7 @@ export default class Campsite extends Phaser.Scene {
     this.scene.start(this.returnTo, {
       mapId: this.mapId,
       currentNodeId: this.nodeId,
+      
     });
   }
 }

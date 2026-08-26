@@ -1,4 +1,4 @@
-//ToDo add a way to remove connections when the player is past the position and the player has no way to travle there
+// ToDo add a way to remove connections when the player is past the position and the player has no way to travle there
 // 
 
 import Phaser from "phaser";
@@ -6,6 +6,8 @@ import mapImage from "url:../assets/images/old_map1.jpg";
 import { getMapById } from "../data/mapNodeData.js";
 import { RunState } from "../systems/RunState.js";
 
+const NODE_OFFSET_X = 0;
+const NODE_OFFSET_Y = 130;
 
 export default class NodeMap extends Phaser.Scene {
     constructor() {
@@ -93,6 +95,7 @@ export default class NodeMap extends Phaser.Scene {
         const scale = Math.max(scaleX, scaleY);
 
         bg.setScale(scale);
+        bg.setPosition(-150, 0)
     }
 
     getReachableNodes(mapData) {
@@ -124,8 +127,9 @@ export default class NodeMap extends Phaser.Scene {
     createConnections(mapData) {
         const graphics = this.add.graphics();
 
+
         graphics.lineStyle(4, 0x000000, 0.2);
-        
+
 
         const nodeById = new Map(
             mapData.nodes.map((node) => [node.id, node])
@@ -144,8 +148,16 @@ export default class NodeMap extends Phaser.Scene {
             }
 
             graphics.beginPath();
-            graphics.moveTo(fromNode.x, fromNode.y);
-            graphics.lineTo(toNode.x, toNode.y);
+
+            graphics.moveTo(
+                fromNode.x + NODE_OFFSET_X,
+                fromNode.y + NODE_OFFSET_Y
+            );
+
+            graphics.lineTo(
+                toNode.x + NODE_OFFSET_X,
+                toNode.y + NODE_OFFSET_Y
+            );
             graphics.strokePath();
         });
 
@@ -170,20 +182,28 @@ export default class NodeMap extends Phaser.Scene {
             }
 
             graphics.beginPath();
-            graphics.moveTo(fromNode.x, fromNode.y);
-            graphics.lineTo(toNode.x, toNode.y);
+            graphics.moveTo(
+                fromNode.x + NODE_OFFSET_X,
+                fromNode.y + NODE_OFFSET_Y
+            );
+
+            graphics.lineTo(
+                toNode.x + NODE_OFFSET_X,
+                toNode.y + NODE_OFFSET_Y
+            );
             graphics.strokePath();
         });
     }
 
     createNodes(mapData, reachableNodes) {
         mapData.nodes.forEach((node) => {
+
             const isCurrentNode =
                 node.id === RunState.progress.currentNodeId;
-    
+
             const isReachable =
                 reachableNodes.includes(node.id);
-    
+
             this.createNode(
                 node,
                 mapData,
@@ -196,12 +216,18 @@ export default class NodeMap extends Phaser.Scene {
         const isCurrentNode =
             node.id === RunState.progress.currentNodeId;
 
+        const isCompleted =
+            RunState.progress.completedNodes.includes(node.id);
+
         const iconKey = this.getNodeIcon(node);
+
+        const x = node.x + NODE_OFFSET_X;
+        const y = node.y + NODE_OFFSET_Y;
 
         if (node.isCheckpoint) {
             this.add.circle(
-                node.x,
-                node.y,
+                x,
+                y,
                 30,
                 0xffd700,
                 0.35
@@ -209,8 +235,8 @@ export default class NodeMap extends Phaser.Scene {
         }
         if (isCurrentNode) {
             this.add.circle(
-                node.x,
-                node.y,
+                x,
+                y,
                 30,
                 0x00ff00,
                 0.35
@@ -218,7 +244,7 @@ export default class NodeMap extends Phaser.Scene {
         }
 
         const icon = this.add
-            .image(node.x, node.y, iconKey)
+            .image(x, y, iconKey)
             .setDisplaySize(42, 42);
         if (isAvailable) {
             icon.setInteractive({ useHandCursor: true });
@@ -226,8 +252,21 @@ export default class NodeMap extends Phaser.Scene {
             icon.on("pointerdown", () => {
                 this.handleNodeSelection(node);
             });
+        
         } else {
             icon.setAlpha(0.3);
+        }
+        if (isCompleted) {
+            this.add.text(
+                x + 18,
+                y - 25,
+                "✓",
+                {
+                    fontSize: "24px",
+                    color: "#00ff00",
+                    fontStyle: "bold",
+                }
+            ).setOrigin(0.5);
         }
     }
 
