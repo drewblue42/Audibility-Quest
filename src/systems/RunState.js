@@ -11,7 +11,6 @@ export const RunState = {
     currentMapId: STARTING_MAP_ID,
     completedNodes: [],
   },
-// get current node function? and add currentNodeID to config file
 
   resetRun() {
     this.player = createPlayer();

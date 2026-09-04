@@ -2,6 +2,7 @@
 import Phaser from "phaser";
 import Button from "../ui/Button";
 import { RunState } from "../systems/RunState";
+import { createPlayerStats } from "../ui/PlayerStats";
 
 export default class Campsite extends Phaser.Scene {
   constructor() {
@@ -43,37 +44,48 @@ export default class Campsite extends Phaser.Scene {
       this,
       this.cameras.main.centerX,
       380,
-      "Restore Health",
+      `Restore Health (${this.seeRestoredHealthAmount()} HP)`,
       () => {
         this.restoreHealth();
         this.returnToMap();
       }
     );
+    createPlayerStats(this, 30, 30);
 
-    new Button(
-      this,
-      this.cameras.main.centerX,
-      470,
-      "Restore Stamina",
-      () => {
-        this.restoreStamina();
-        this.returnToMap();
-      }
-    );
+    // new Button(
+    //   this,
+    //   this.cameras.main.centerX,
+    //   470,
+    //   "Restore Stamina",
+    //   () => {
+    //     this.restoreStamina();
+    //     this.returnToMap();
+    //   }
+    // );
 
-    new Button(
-      this,
-      this.cameras.main.centerX,
-      560,
-      "Leave Camp",
-      () => {
-        this.returnToMap();
-      }
-    );
+    // new Button(
+    //   this,
+    //   this.cameras.main.centerX,
+    //   560,
+    //   "Leave Camp",
+    //   () => {
+    //     this.returnToMap();
+    //   }
+    // );
+  }
+  seeRestoredHealthAmount() {
+    const currentHealth = RunState.player.health;
+    const maxHealth = RunState.player.maxHealth;
+    const toAddHealth =  Math.ceil((maxHealth-currentHealth)/2);
+    return toAddHealth;
   }
 
   restoreHealth() {
-    RunState.player.health = 3;
+    const currentHealth = RunState.player.health;
+    const maxHealth = RunState.player.maxHealth;
+    const toAddHealth =  Math.ceil((maxHealth-currentHealth)/2);
+    RunState.player.health += toAddHealth;
+
     console.log("Restore player health here");
   }
 

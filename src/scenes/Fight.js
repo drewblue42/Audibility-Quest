@@ -182,7 +182,7 @@ export default class Fight extends Phaser.Scene {
     this.staminaText = this.add.text(
       220,
       40,
-      `Stamina: ${RunState.player.stamina}/${RunState.player.maxStamina}`,
+       `⚡ ${RunState.player.stamina}/${RunState.player.maxStamina}`,
       {
         fontSize: "32px",
         fontFamily: "italic bold sans-serif",
@@ -266,9 +266,27 @@ export default class Fight extends Phaser.Scene {
       }
     );
 
+    this.notificationText = this.add.text(
+      1130,
+      700,
+      "",
+      {
+        fontSize: "26px",
+        fontStyle: "italic",
+        color: "#000000",
+
+        wordWrap: {
+          width: 260,
+          useAdvancedWrap: true,
+        },
+
+        align: "center",
+      }
+    ).setOrigin(0.5, 0);
+
     this.buildWordGrid();
 
-    this.runBtn = new Button(this, 1080, 835, "Run", () => {
+    this.runBtn = new Button(this, 1120, 860, "Run", () => {
       this.runAway();
     });
 
@@ -302,7 +320,7 @@ export default class Fight extends Phaser.Scene {
       )
       .setOrigin(0.5);
 
-      ///////////////////////Enemy Health Bar///////////
+    ///////////////////////Enemy Health Bar///////////
 
     const enemyBarX = 950;
     const enemyBarY = 500;
@@ -333,8 +351,8 @@ export default class Fight extends Phaser.Scene {
       )
       .setOrigin(0.5);
 
-      this.updateEnemyHealthBar()
-      this.updateHealthBar()
+    this.updateEnemyHealthBar()
+    this.updateHealthBar()
     // new Button(this, 1180, 835, "Back", () => {
     //   this.scene.start(this.returnTo);
     // });
@@ -648,29 +666,163 @@ export default class Fight extends Phaser.Scene {
     }
   }
 
+  restorePlayerHealth() {
+    RunState.player.health = RunState.player.maxHealth;
+  }
+
   playerDefeated() {
     if (this.fightEnded) return;
 
     this.fightEnded = true;
     this.roundReady = false;
 
-    this.statusText.setText("You were defeated!");
-    this.damageText.setText("");
-
     if (this.grid) {
       this.grid.destroy();
       this.grid = null;
     }
 
+    this.showDeathScreen();
+  }
+
+  showDeathScreen() {
+    const width = this.scale.width;
+    const height = this.scale.height;
+    const dripStartY = height / 2 - 60;
+
+    // Black overlay
+    this.add
+      .rectangle(0, 0, width, height, 0x000000, 1)
+      .setOrigin(0)
+      .setDepth(1000);
+
+    // Main YOU DIED text
+    const deathText = this.add
+      .text(width / 2, height / 2 - 80, "YOU DIED", {
+        fontSize: "110px",
+        color: "#cc0000",
+        fontStyle: "bold",
+        stroke: "#550000",
+        strokeThickness: 8,
+      })
+      .setOrigin(0.5)
+      .setAlpha(0)
+      .setDepth(1001);
+
+    // Fake blood drips
+    const drip1 = this.add
+      .rectangle(
+        width / 2 - 140,
+        dripStartY,
+        8,
+        90,
+        0xaa0000
+      )
+      .setOrigin(0.5, 0)
+      .setScale(1, 0)
+      .setDepth(1001);
+
+    const drip2 = this.add
+      .rectangle(
+        width / 2,
+        dripStartY,
+        10,
+        130,
+        0xaa0000
+      )
+      .setOrigin(0.5, 0)
+      .setScale(1, 0)
+      .setDepth(1001);
+
+    const drip3 = this.add
+      .rectangle(
+        width / 2 + 150,
+        dripStartY ,
+        7,
+        70,
+        0xaa0000
+      )
+      .setOrigin(0.5, 0)
+      .setScale(1, 0)
+      .setDepth(1001);
+
+    // Fade/scale text in
     this.tweens.add({
-      targets: this.player,
-      alpha: 0,
-      y: this.player.y + 80,
-      duration: 700,
+      targets: deathText,
+      alpha: 1,
+      scale: {
+        from: 0.7,
+        to: 1,
+      },
+      duration: 1000,
+      ease: "Back.easeOut",
     });
 
-    this.time.delayedCall(1200, () => {
-      this.scene.start(this.returnTo);
+    // Animate drips downward
+    this.tweens.add({
+      targets: drip1,
+      scaleY: 1,
+      duration: 1300,
+      delay: 500,
+      ease: "Sine.easeIn",
+    });
+
+    this.tweens.add({
+      targets: drip2,
+      scaleY: 1,
+      duration: 1600,
+      delay: 650,
+      ease: "Sine.easeIn",
+    });
+    
+    this.tweens.add({
+      targets: drip3,
+      scaleY: 1,
+      duration: 1100,
+      delay: 800,
+      ease: "Sine.easeIn",
+    });
+
+    // Continue prompt
+    const continueText = this.add
+      .text(
+        width / 2,
+        height / 2 + 180,
+        "Press ENTER to continue",
+        {
+          fontSize: "28px",
+          color: "#ffffff",
+        }
+      )
+      .setOrigin(0.5)
+      .setAlpha(0)
+      .setDepth(1001);
+
+    this.tweens.add({
+      targets: continueText,
+      alpha: 1,
+      duration: 800,
+      delay: 1800,
+    });
+
+    // Flash the continue text
+    this.tweens.add({
+      targets: continueText,
+      alpha: 0.3,
+      duration: 700,
+      yoyo: true,
+      repeat: -1,
+      delay: 2600,
+    });
+
+    // Wait for Enter
+    this.input.keyboard.once("keydown-ENTER", () => {
+      this.restorePlayerHealth();
+
+      this.scene.restart({
+        nodeId: this.nodeId,
+        mapId: RunState.progress.currentMapId,
+        returnTo: this.returnTo,
+      });
     });
   }
 
@@ -685,34 +837,43 @@ export default class Fight extends Phaser.Scene {
   }
 
   runAway() {
-    if (this.fightEnded) return;
+    if (RunState.player.stamina != 0) {
+      if (this.fightEnded) return;
 
-    this.fightEnded = true;
-    this.roundReady = false;
+      this.fightEnded = true;
+      this.roundReady = false;
 
-    RunState.completeNode(this.nodeId);
+      RunState.completeNode(this.nodeId);
 
-    RunState.reduceStamina(1);
+      RunState.reduceStamina(1);
 
-    this.staminaText.setText(
-      `Stamina: ${RunState.player.stamina}/${RunState.player.maxStamina}`
-    );
+      this.staminaText.setText(
+        `Stamina: ${RunState.player.stamina}/${RunState.player.maxStamina}`
+      );
 
-    this.statusText.setText("You ran away. Stamina reduced by 1.");
+      this.statusText.setText("You ran away. Stamina reduced by 1.");
 
-    if (this.grid) {
-      this.grid.destroy();
-      this.grid = null;
+      if (this.grid) {
+        this.grid.destroy();
+        this.grid = null;
+      }
+
+      this.tweens.add({
+        targets: this.player,
+        x: -100,
+        duration: 600,
+        onComplete: () => {
+          this.scene.start(this.returnTo);
+        },
+      });
     }
+    this.notificationText.setText(
 
-    this.tweens.add({
-      targets: this.player,
-      x: -100,
-      duration: 600,
-      onComplete: () => {
-        this.scene.start(this.returnTo);
-      },
-    });
+      `You are out of Stamina and must stand your ground!`,
+    );
+    return;
+
+
   }
 
   updateHealthBar() {

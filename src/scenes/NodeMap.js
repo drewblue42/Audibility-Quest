@@ -5,6 +5,7 @@ import Phaser from "phaser";
 import mapImage from "url:../assets/images/old_map1.jpg";
 import { getMapById } from "../data/mapNodeData.js";
 import { RunState } from "../systems/RunState.js";
+import { createPlayerStats } from "../ui/PlayerStats.js";
 
 const NODE_OFFSET_X = 0;
 const NODE_OFFSET_Y = 130;
@@ -82,6 +83,8 @@ export default class NodeMap extends Phaser.Scene {
         this.createBackground(mapData.backgroundKey);
         this.createConnections(mapData);
         this.createNodes(mapData, reachableNodes);
+        createPlayerStats(this, 30, 30);
+        
 
     }
 
@@ -332,7 +335,7 @@ export default class NodeMap extends Phaser.Scene {
                     break;
 
                 case "treasure":
-                    this.scene.start("treasure", {
+                    this.scene.start("potionshop", {
                         nodeId: node.id,
                         mapId: RunState.progress.currentMapId,
                         returnTo: "nodeMap",
