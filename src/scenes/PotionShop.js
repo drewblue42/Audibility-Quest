@@ -132,6 +132,14 @@ export default class PotionShop extends Phaser.Scene {
     console.log("Restore player health here");
   }
 
+  speedPotion(){
+    RunState.progress.skipNode = true
+    RunState.boss.health += 4
+    RunState.boss.maxHealth += 4
+    console.log("BOSS HEALTH INCREASED")
+    console.log("Current Health of Boss: " + RunState.boss.maxHealth )
+  }
+
   createPotionButton(x, y, imageKey, label, description, hoverColor, onClick) {
     const image = this.add
       .image(x, y, imageKey)
@@ -171,10 +179,6 @@ export default class PotionShop extends Phaser.Scene {
   }
 
   returnToMap() {
-    this.scene.start(this.returnTo, {
-      mapId: this.mapId,
-      currentNodeId: this.nodeId,
-
-    });
+    this.scene.start(this.returnTo);
   }
 }

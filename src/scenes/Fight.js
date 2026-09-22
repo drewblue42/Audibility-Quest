@@ -54,11 +54,34 @@ export default class Fight extends Phaser.Scene {
       frameWidth: 96,
       frameHeight: 96,
     })
+
+    const dragonIdleUrl = new URL(
+      "../assets/animations/Dragon/ShadowDragon/Animations/Idle_Right/Idle_right.png",
+      import.meta.url
+    ).href;
+
+    const dragonAttackUrl = new URL(
+      "../assets/animations/Dragon/ShadowDragon/Animations/Attack_Right/Attack_right.png",
+
+      import.meta.url
+    ).href;
+
+    this.load.spritesheet("dragonIdle", dragonIdleUrl, {
+      frameWidth: 1408,
+      frameHeight: 792,
+    });
+
+    this.load.spritesheet("dragonAttack", dragonAttackUrl, {
+      frameWidth: 1408,
+      frameHeight: 792,
+    });
   }
 
   create(data) {
     this.returnTo = data?.returnTo ?? "nodeMap";
     this.nodeId = data?.nodeId ?? null;
+
+    this.encounterType = data?.encounterType ?? "normal";
 
     this.roundReady = false;
     this.fightEnded = false;
@@ -67,10 +90,6 @@ export default class Fight extends Phaser.Scene {
     this.showCountdown(() => {
       this.buildFightScene();
       this.setupKeyboardControls();
-    });
-
-    this.events.once("shutdown", () => {
-      this.input.keyboard?.removeAllListeners("keydown");
     });
   }
 
@@ -146,28 +165,62 @@ export default class Fight extends Phaser.Scene {
         repeat: -1,
       });
     }
+
+    if (!this.anims.exists("dragon-idle")) {
+      this.anims.create({
+        key: "dragon-idle",
+        frames: this.anims.generateFrameNumbers("dragonIdle", {
+          start: 0,
+          end: 9,
+        }),
+        frameRate: 8,
+        repeat: -1,
+      });
+    }
+
+    if (!this.anims.exists("dragon-attack")) {
+      this.anims.create({
+        key: "dragon-attack",
+        frames: this.anims.generateFrameNumbers("dragonAttack", {
+          start: 0,
+          end: 9,
+        }),
+        frameRate: 10,
+        repeat: 0,
+      });
+    }
   }
 
   buildFightScene() {
     this.createAnimations();
 
+    console.log("ENCOUNTER TYPE:", this.encounterType);
 
+    let monsterTemplate;
 
-    const monsterTemplate = getRandomMonster();
+    if (this.encounterType === "boss") {
+      monsterTemplate = RunState.boss
+    } else {
+      monsterTemplate = getRandomMonster();
+    }
+
+    console.log("MONSTER TEMPLATE:", monsterTemplate);
 
     this.currentMonster = {
       name: monsterTemplate.name,
-      health: monsterTemplate.maxHealth,
+    
+      health:
+        this.encounterType === "boss"
+          ? RunState.boss.health
+          : monsterTemplate.maxHealth,
+    
       maxHealth: monsterTemplate.maxHealth,
-
+    
       textureKey: monsterTemplate.textureKey,
-      idleFrame: monsterTemplate.idleFrame,
       animations: monsterTemplate.animations,
       scale: monsterTemplate.scale,
     };
-    this.add.text(670, 20, `${this.currentMonster.name}`, {
-      fontSize: "32px",
-    });
+    
 
     this.healthText = this.add.text(
       50,
@@ -182,7 +235,7 @@ export default class Fight extends Phaser.Scene {
     this.staminaText = this.add.text(
       220,
       40,
-       `⚡ ${RunState.player.stamina}/${RunState.player.maxStamina}`,
+      `⚡ ${RunState.player.stamina}/${RunState.player.maxStamina}`,
       {
         fontSize: "32px",
         fontFamily: "italic bold sans-serif",
@@ -257,14 +310,29 @@ export default class Fight extends Phaser.Scene {
         fontSize: "22px",
       }
     );
-    this.reminderText = this.add.text(
-      50,
-      920,
-      "Reminder: You can run if you can't hear the words, but running reduces stamina by 1.",
-      {
-        fontSize: "18px",
-      }
-    );
+
+    if (this.encounterType === "boss") {
+      this.reminderText = this.add.text(
+        940,
+        720,
+        "You cannot run from the boss!",
+        {
+          fontSize: "18px",
+          color: "#ff0000",
+        }
+      );
+    }
+
+    if (this.encounterType !== "boss") {
+      this.reminderText = this.add.text(
+        50,
+        920,
+        "Reminder: You can run if you can't hear the words, but running reduces stamina by 1.",
+        {
+          fontSize: "18px",
+        }
+      );
+    }
 
     this.notificationText = this.add.text(
       1130,
@@ -286,9 +354,11 @@ export default class Fight extends Phaser.Scene {
 
     this.buildWordGrid();
 
-    this.runBtn = new Button(this, 1120, 860, "Run", () => {
-      this.runAway();
-    });
+    if (this.encounterType !== "boss") {
+      this.runBtn = new Button(this, 1120, 860, "Run", () => {
+        this.runAway();
+      });
+    }
 
     //////////////////////////  Player health bar
     const barX = 100;
@@ -319,6 +389,10 @@ export default class Fight extends Phaser.Scene {
         }
       )
       .setOrigin(0.5);
+
+      this.add.text(670, 20, `${this.currentMonster.name}`, {
+        fontSize: "32px",
+      });
 
     ///////////////////////Enemy Health Bar///////////
 
@@ -501,6 +575,11 @@ export default class Fight extends Phaser.Scene {
       0,
       this.currentMonster.health - damageToMonster
     );
+    
+    if (this.encounterType === "boss") {
+      RunState.boss.health = this.currentMonster.health;
+    }
+
     this.updateEnemyHealthBar()
     this.healthText.setText(
       `❤️ ${RunState.player.health}/${RunState.player.maxHealth}`
@@ -672,15 +751,30 @@ export default class Fight extends Phaser.Scene {
 
   playerDefeated() {
     if (this.fightEnded) return;
-
+  
     this.fightEnded = true;
     this.roundReady = false;
-
+  
+    if (this.encounterType === "boss") {
+      RunState.boss.health =
+        Math.ceil(RunState.boss.health / 4) * 4;
+  
+      RunState.boss.health = Math.min(
+        RunState.boss.health,
+        RunState.boss.maxHealth
+      );
+  
+      console.log(
+        "Boss revived to:",
+        RunState.boss.health
+      );
+    }
+  
     if (this.grid) {
       this.grid.destroy();
       this.grid = null;
     }
-
+  
     this.showDeathScreen();
   }
 
@@ -736,7 +830,7 @@ export default class Fight extends Phaser.Scene {
     const drip3 = this.add
       .rectangle(
         width / 2 + 150,
-        dripStartY ,
+        dripStartY,
         7,
         70,
         0xaa0000
@@ -773,7 +867,7 @@ export default class Fight extends Phaser.Scene {
       delay: 650,
       ease: "Sine.easeIn",
     });
-    
+
     this.tweens.add({
       targets: drip3,
       scaleY: 1,
@@ -822,6 +916,7 @@ export default class Fight extends Phaser.Scene {
         nodeId: this.nodeId,
         mapId: RunState.progress.currentMapId,
         returnTo: this.returnTo,
+        encounterType: this.encounterType,
       });
     });
   }
@@ -857,6 +952,11 @@ export default class Fight extends Phaser.Scene {
         this.grid.destroy();
         this.grid = null;
       }
+
+      RunState.boss.health += 4
+      RunState.boss.maxHealth += 4
+      console.log("BOSS HEALTH INCREASED")
+      console.log("Current Health of Boss: " + RunState.boss.maxHealth )
 
       this.tweens.add({
         targets: this.player,

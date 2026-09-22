@@ -1,6 +1,6 @@
 import { createPlayer } from "../data/player";
 import { STARTING_MAP_ID, STARTING_NODE_ID } from "../congif/gameConfig.js"
-
+import { createBoss } from "../data/boss.js";
 
 
 export const RunState = {
@@ -10,10 +10,15 @@ export const RunState = {
     currentNodeId: STARTING_NODE_ID,
     currentMapId: STARTING_MAP_ID,
     completedNodes: [],
+    skipNode: false
   },
+
+  boss: createBoss(),
+  
 
   resetRun() {
     this.player = createPlayer();
+    this.boss = createBoss();
     this.progress.currentMapId = STARTING_MAP_ID;
     this.progress.currentNodeId = STARTING_NODE_ID;
     this.progress.completedNodes = [];

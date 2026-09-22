@@ -84,7 +84,7 @@ export default class NodeMap extends Phaser.Scene {
         this.createConnections(mapData);
         this.createNodes(mapData, reachableNodes);
         createPlayerStats(this, 30, 30);
-        
+
 
     }
 
@@ -255,7 +255,7 @@ export default class NodeMap extends Phaser.Scene {
             icon.on("pointerdown", () => {
                 this.handleNodeSelection(node);
             });
-        
+
         } else {
             icon.setAlpha(0.3);
         }
@@ -313,47 +313,70 @@ export default class NodeMap extends Phaser.Scene {
     }
 
     handleNodeSelection(node) {
-        this.cameras.main.shake(300);
-        RunState.setCurrentNode(node.id);
+        switch (node.type) {
+            case "fight":
+                if (RunState.progress.skipNode === true) {
 
-        this.time.delayedCall(300, () => {
-            switch (node.type) {
-                case "fight":
-                    this.scene.start("fight", {
-                        nodeId: node.id,
-                        mapId: RunState.progress.currentMapId,
-                        returnTo: "nodeMap",
-                    });
-                    break;
+                    RunState.progress.skipNode = false
+                    RunState.setCurrentNode(node.id);
+                    RunState.completeNode(node.id);
 
-                case "camp":
-                    this.scene.start("campsite", {
-                        nodeId: node.id,
-                        mapId: RunState.progress.currentMapId,
-                        returnTo: "nodeMap",
-                    });
-                    break;
 
-                case "treasure":
-                    this.scene.start("potionshop", {
-                        nodeId: node.id,
-                        mapId: RunState.progress.currentMapId,
-                        returnTo: "nodeMap",
-                    });
-                    break;
+                    this.scene.start("nodeMap");
 
-                case "boss":
-                    this.scene.start("fight", {
-                        nodeId: node.id,
-                        mapId: RunState.progress.currentMapId,
-                        encounterType: "boss",
-                        returnTo: "nodeMap",
-                    });
-                    break;
+                }
+                else {
+                    RunState.setCurrentNode(node.id);
+                    this.cameras.main.shake(300);
+                    this.time.delayedCall(300, () => {
+                        this.scene.start("fight", {
+                            nodeId: node.id,
+                            mapId: RunState.progress.currentMapId,
+                            returnTo: "nodeMap",
+                        });
+                    }
+                    )
+                }
+                console.log("CURRENT NODE: "+ RunState.progress.currentNodeId)
+                break;
 
-                default:
-                    console.warn(`Unknown node type: ${node.type}`);
-            }
-        });
+            case "camp":
+                RunState.setCurrentNode(node.id);
+                this.scene.start("campsite", {
+                    nodeId: node.id,
+                    mapId: RunState.progress.currentMapId,
+                    returnTo: "nodeMap",
+                });
+                console.log("CURRENT NODE: "+ RunState.progress.currentNodeId)
+                RunState.completeNode(node.id);
+                break;
+
+            case "treasure":
+                RunState.setCurrentNode(node.id);
+                this.scene.start("potionshop", {
+                    nodeId: node.id,
+                    mapId: RunState.progress.currentMapId,
+                    returnTo: "nodeMap",
+                });
+                console.log("CURRENT NODE: "+ RunState.progress.currentNodeId)
+                RunState.completeNode(node.id);
+                break;
+
+            case "boss":
+                RunState.setCurrentNode(node.id);
+                this.scene.start("fight", {
+                    nodeId: node.id,
+                    mapId: RunState.progress.currentMapId,
+                    encounterType: "boss",
+                    returnTo: "nodeMap",
+                });
+                console.log("CURRENT NODE: "+ RunState.progress.currentNodeId)
+                RunState.completeNode(node.id);
+                break;
+
+            default:
+                console.warn(`Unknown node type: ${node.type}`);
+
+        };
     }
 }
