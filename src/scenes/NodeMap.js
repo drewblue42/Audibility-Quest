@@ -2,7 +2,7 @@
 // 
 
 import Phaser from "phaser";
-import mapImage from "url:../assets/images/old_map1.jpg";
+import mapImage from "url:../assets/images/background/old_map1.jpg";
 import { getMapById } from "../data/mapNodeData.js";
 import { RunState } from "../systems/RunState.js";
 import { createPlayerStats } from "../ui/PlayerStats.js";
@@ -71,6 +71,7 @@ export default class NodeMap extends Phaser.Scene {
     }
 
     create() {
+        
         const mapData = getMapById(this.mapId);
 
         if (!mapData) {

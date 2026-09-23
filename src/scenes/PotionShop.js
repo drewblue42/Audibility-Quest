@@ -23,18 +23,71 @@ export default class PotionShop extends Phaser.Scene {
     this.load.image("staminaPotion", staminaPotion);
     this.load.image("speedPotion", speedPotion);
     this.load.image("strengthPotion", strengthPotion);
+
+    const potionShopUrl = new URL(
+      "../assets/images/background/potionbg.png",
+      import.meta.url
+    ).toString();
+
+    this.load.image("potion", potionShopUrl);
+
+    const tabUrl = new URL(
+      "../assets/ui/tab.png",
+      import.meta.url
+    ).toString();
+
+    this.load.image("potionTab", tabUrl);
   }
 
   create() {
+
+    const bg = this.add
+      .image(
+        this.cameras.main.centerX,
+        this.cameras.main.centerY,
+        "potion"
+      )
+      .setOrigin(0.5);
+
+    const scaleX = this.cameras.main.width / bg.width;
+    const scaleY = this.cameras.main.height / bg.height;
+    const scale = Math.max(scaleX, scaleY);
+
+    bg.setScale(scale);
+
+    const titleStyle = {
+      fontFamily: "Palatino",
+      fontSize: "48px",
+      color: "#fcc844",
+      fontStyle: "bold",
+      stroke: "#241600",
+      strokeThickness: 5,
+    };
+
+    const uiTextStyle = {
+      fontFamily: "Palatino",
+      fontSize: "22px",
+      color: "#fcc844",
+      fontStyle: "bold",
+      stroke: "#241600",
+      strokeThickness: 3,
+    };
+
+    const smallUiTextStyle = {
+      fontFamily: "Palatino",
+      fontSize: "18px",
+      color: "#fcc844",
+      fontStyle: "bold",
+      stroke: "#241600",
+      strokeThickness: 2,
+    };
+
     this.add
       .text(
         this.cameras.main.centerX,
         150,
         "Potion Shop",
-        {
-          fontSize: "48px",
-          color: "#ffffff",
-        }
+        titleStyle
       )
       .setOrigin(0.5);
 
@@ -43,89 +96,89 @@ export default class PotionShop extends Phaser.Scene {
         this.cameras.main.centerX,
         260,
         "Choose a potion to take (Warning: will be used immediatly!)",
-        {
-          fontSize: "28px",
-          color: "#ffffff",
-        }
+        uiTextStyle
       )
       .setOrigin(0.5);
 
 
-      this.createPotionButton(
-        200,
-        400,
-        "healingPotion",
-        "Health Potion",
-        "Restores 20 health, up to your maximum health.",
-        "#fc030b",
-        () => {
-          this.restoreHealth();
-          RunState.achievements.potionMaster = true
-          RunState.achievements.fortitude = false
-          console.log("Fortitude achievements lost!!")
-          console.log("Potion master achieved")
-          this.returnToMap();
-        }
-      );
-      
-      this.createPotionButton(
-        450,
-        400,
-        "staminaPotion",
-        "Stamina Potion",
-        "Restores 1 stamina point, up to your maximum stamina.",
-        "#13d102",
-        () => {
-          this.restoreStamina();
-          RunState.achievements.potionMaster = true
-          console.log("Potion master achieved")
-          this.returnToMap();
-        }
-      );
-      
-      this.createPotionButton(
-        700,
-        400,
-        "speedPotion",
-        "Speed Potion",
-        "You move two spaces instead of one before fighting the next monster",
-        "#0390fc",
-        () => {
-          this.speedPotion();
-          RunState.achievements.potionMaster = true
-          console.log("Potion master achieved")
-          this.returnToMap();
-        }
-      );
-      
-      this.createPotionButton(
-        950,
-        400,
-        "strengthPotion",
-        "Strength Potion",
-        "Your next fight is easier!",
-        "#ed8b02",
-        () => {
-          RunState.achievements.potionMaster = true
-          console.log("Potion master achieved")
-          this.returnToMap();
-        }
-      );
+    this.createPotionButton(
+      260,
+      400,
+      "healingPotion",
+      "Health Potion",
+      "Restores 20 health, up to your maximum health.",
+      "#fc030b",
+      () => {
+        this.restoreHealth();
+        RunState.achievements.potionMaster = true
+        RunState.achievements.fortitude = false
+        console.log("Fortitude achievements lost!!")
+        console.log("Potion master achieved")
+        this.returnToMap();
+      }
+    );
+
+    this.createPotionButton(
+      510,
+      400,
+      "staminaPotion",
+      "Stamina Potion",
+      "Restores 1 stamina point, up to your maximum stamina.",
+      "#13d102",
+      () => {
+        this.restoreStamina();
+        RunState.achievements.potionMaster = true
+        console.log("Potion master achieved")
+        this.returnToMap();
+      }
+    );
+
+    this.createPotionButton(
+      760,
+      400,
+      "speedPotion",
+      "Speed Potion",
+      "You move two spaces instead of one before fighting the next monster",
+      "#0390fc",
+      () => {
+        this.speedPotion();
+        RunState.achievements.potionMaster = true
+        console.log("Potion master achieved")
+        this.returnToMap();
+      }
+    );
+
+    this.createPotionButton(
+      1010,
+      400,
+      "strengthPotion",
+      "Strength Potion",
+      "Your next fight is easier!",
+      "#ed8b02",
+      () => {
+        RunState.achievements.potionMaster = true
+        console.log("Potion master achieved")
+        this.returnToMap();
+      }
+    );
 
     this.descriptionText = this.add
       .text(
         this.cameras.main.centerX,
-        600,
+        650,
         "Hover over a potion to see what it does.",
         {
-          fontSize: "22px",
-          color: "#ffffff",
-          backgroundColor: "#000000" ,
+          ...uiTextStyle,
+
+          backgroundColor: "#17130d",
+
           padding: {
-            x: 16,
-            y: 12,
+            x: 20,
+            y: 14,
           },
+
           align: "center",
+
           wordWrap: {
             width: 700,
           },
@@ -136,55 +189,133 @@ export default class PotionShop extends Phaser.Scene {
 
   restoreHealth() {
     const toAddHealth = 20
-    RunState.player.health += toAddHealth;
+    RunState.player.health = Math.min(
+      RunState.player.health + toAddHealth,
+      RunState.player.maxHealth
+    );
 
     console.log("Restore player health here");
   }
 
-  speedPotion(){
+  speedPotion() {
     RunState.progress.skipNode = true
     RunState.boss.health += 4
     RunState.boss.maxHealth += 4
     console.log("BOSS HEALTH INCREASED")
-    console.log("Current Health of Boss: " + RunState.boss.maxHealth )
+    console.log("Current Health of Boss: " + RunState.boss.maxHealth)
   }
 
-  createPotionButton(x, y, imageKey, label, description, hoverColor, onClick) {
+  createPotionButton(
+    x,
+    y,
+    imageKey,
+    label,
+    description,
+    hoverColor,
+    onClick
+  ) {
+    // Tab behind potion
+    const tab = this.add
+      .image(
+        x,
+        y + 25,
+        "potionTab"
+      )
+      .setOrigin(0.5)
+      .setDisplaySize(210, 180);
+
     const image = this.add
-      .image(x, y, imageKey)
+      .image(
+        x,
+        y - 10,
+        imageKey
+      )
       .setDisplaySize(80, 80)
-      .setInteractive({ useHandCursor: true });
-  
-    this.add
-      .text(x, y + 60, label, {
-        fontSize: "20px",
-        color: "#ffffff",
-      })
+      .setInteractive({
+        useHandCursor: true,
+      });
+
+    const labelText = this.add
+      .text(
+        x,
+        y + 65,
+        label,
+        {
+          fontSize: "20px",
+          fontFamily: "Palatino",
+          color: "#fcc844",
+          fontStyle: "bold",
+          stroke: "#241600",
+          strokeThickness: 3,
+        }
+      )
       .setOrigin(0.5);
-  
-    image.on("pointerdown", onClick);
-  
-    image.on("pointerover", () => {
-      image.setDisplaySize(90, 90);
-      
-      this.descriptionText.setText(description);
-      this.descriptionText.setBackgroundColor(hoverColor)
-    });
-  
-    image.on("pointerout", () => {
-      image.setDisplaySize(80, 80);
-  
-      this.descriptionText.setText(
-        "Hover over a potion to see what it does."
-      );
-      this.descriptionText.setBackgroundColor("#000000");
-    });
-  
+
+    image.on(
+      "pointerdown",
+      onClick
+    );
+
+    image.on(
+      "pointerover",
+      () => {
+        image.setDisplaySize(
+          90,
+          90
+        );
+
+        tab.setTint(
+          0xdddddd
+        );
+
+        labelText.setColor(
+          "#fff1a8"
+        );
+
+        this.descriptionText.setText(
+          description
+        );
+
+        this.descriptionText
+          .setBackgroundColor(
+            hoverColor
+          );
+      }
+    );
+
+    image.on(
+      "pointerout",
+      () => {
+        image.setDisplaySize(
+          80,
+          80
+        );
+
+        tab.clearTint();
+
+        labelText.setColor(
+          "#fcc844"
+        );
+
+        this.descriptionText.setText(
+          "Hover over a potion to see what it does."
+        );
+
+        this.descriptionText
+          .setBackgroundColor(
+            "#17130d"
+          );
+      }
+    );
+
     return image;
   }
 
   restoreStamina() {
-    RunState.player.stamina += 1;
+    RunState.player.stamina = Math.min(
+      RunState.player.stamina + 1,
+      RunState.player.maxStamina
+    );
   }
 
   returnToMap() {

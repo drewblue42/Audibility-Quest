@@ -1,61 +1,67 @@
-export default class Button extends Phaser.GameObjects.Text {
-  constructor(scene, x, y, text, callback) {
-    super(scene, x, y, text, {
-      fontSize: '32px',
-      fontFamily: 'Arial',
-      color: '#ffffff',
-      backgroundColor: '#1e90ff',
-      padding: { x: 20, y: 10 },
+import Phaser from "phaser";
+
+export default class Button {
+  constructor(
+    scene,
+    x,
+    y,
+    label,
+    onClick,
+    scale = 3
+  ) {
+    this.background = scene.add
+      .image(x, y, "Button")
+      .setOrigin(0.5)
+      .setScale(scale)
+      .setInteractive({ useHandCursor: true });
+
+    this.text = scene.add
+      .text(x, y - 10, label, {
+        fontSize: "32px",
+        fontFamily: "Palatino",
+        color: "#fcc844",
+        fontStyle: "bold",
+        stroke: "#4d4a24",
+        strokeThickness: 3,
+      })
+      .setOrigin(0.5);
+
+    // Gentle banner waving
+    scene.tweens.add({
+      targets: this.background,
+      scaleX: {
+        from: scale * 0.98,
+        to: scale * 1.02,
+      },
+      scaleY: {
+        from: scale * 1.01,
+        to: scale * 0.99,
+      },
+      angle: {
+        from: -0.5,
+        to: 0.5,
+      },
+      duration: 900,
+      yoyo: true,
+      repeat: -1,
+      ease: "Sine.easeInOut",
     });
 
-    this._enabled = true;
-    this._baseBg = '#1e90ff';
-    this._hoverBg = '#63b3ff';
-    this._disabledBg = '#777777';
-
-    this.setOrigin(0.5);
-    this.setInteractive({ useHandCursor: true });
-
-    this.on('pointerover', () => {
-      if (!this._enabled) return;
-      this.setStyle({ backgroundColor: this._hoverBg });
+    this.background.on("pointerover", () => {
+      this.background.setTint(0xdddddd);
     });
 
-    this.on('pointerout', () => {
-      if (!this._enabled) return;
-      this.setStyle({ backgroundColor: this._baseBg });
+    this.background.on("pointerout", () => {
+      this.background.clearTint();
     });
 
-    this.on('pointerdown', () => {
-      if (!this._enabled) return;
-      callback?.();
+    this.background.on("pointerdown", () => {
+      this.background.setScale(scale * 0.95);
     });
 
-    scene.add.existing(this);
-  }
-
-  disable() {
-    this._enabled = false;
-    this.disableInteractive();
-    return this;
-  }
-
-  enable() {
-    this._enabled = true;
-    this.setInteractive({ useHandCursor: true });
-    this.setStyle({ backgroundColor: this._baseBg });
-    this.setAlpha(1);
-    return this;
-  }
-
-  setGreyed(isGrey = true) {
-    if (isGrey) {
-      this.setStyle({ backgroundColor: this._disabledBg });
-      this.setAlpha(0.65);
-    } else {
-      this.setStyle({ backgroundColor: this._baseBg });
-      this.setAlpha(1);
-    }
-    return this;
+    this.background.on("pointerup", () => {
+      this.background.setScale(scale);
+      onClick();
+    });
   }
 }

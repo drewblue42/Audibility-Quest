@@ -75,9 +75,73 @@ export default class Fight extends Phaser.Scene {
       frameWidth: 1408,
       frameHeight: 792,
     });
+
+    const dungeonURL = new URL(
+      "../assets/images/background/dungeon.png",
+      import.meta.url
+    ).toString();
+
+    this.load.image("dungeon", dungeonURL);
+
+    const dungeonBrickURL = new URL(
+      "../assets/images/background/dungeonbrick.png",
+      import.meta.url
+    ).toString();
+
+    this.load.image("dungeonbrick", dungeonBrickURL);
+
+    const wordGridBorderUrl = new URL(
+      "../assets/ui/wordgridborder.png",
+      import.meta.url
+    ).toString();
+
+    this.load.image("wordGridBorder", wordGridBorderUrl);
+
+    const heroHealthBarUrl = new URL(
+      "../assets/ui/heroHealthBar.png",
+      import.meta.url
+    ).toString();
+
+    const monsterHealthBarUrl = new URL(
+      "../assets/ui/monsterHealthBar.png",
+      import.meta.url
+    ).toString();
+
+    this.load.image("heroHealthBarFrame", heroHealthBarUrl);
+    this.load.image("monsterHealthBarFrame", monsterHealthBarUrl);
   }
 
   create(data) {
+
+    const bgBrick = this.add
+      .image(
+        this.cameras.main.centerX,
+        this.cameras.main.centerY,
+        "dungeonbrick"
+      )
+      .setOrigin(0.5);
+
+    const scaleXX = this.cameras.main.width / bgBrick.width;
+    const scaleYY = this.cameras.main.height / bgBrick.height;
+    const scale1 = Math.max(scaleXX, scaleYY);
+
+    bgBrick.setScale(scale1);
+    const bg = this.add
+      .image(
+        this.cameras.main.centerX,
+        this.cameras.main.centerY - 400,
+        "dungeon"
+      )
+      .setOrigin(0.5);
+
+    const scaleX = this.cameras.main.width / bg.width;
+    const scaleY = this.cameras.main.height / bg.height;
+    const scale = Math.max(scaleX, scaleY);
+
+    bg.setScale(scale);
+
+
+
     this.returnTo = data?.returnTo ?? "nodeMap";
     this.nodeId = data?.nodeId ?? null;
 
@@ -95,25 +159,93 @@ export default class Fight extends Phaser.Scene {
 
   ////////Shows the inital fight screen
   showCountdown(onComplete) {
-    const fightCountDown = this.add
-      .text(640, 450, "", {
-        fontSize: "100px",
-      })
-      .setOrigin(0.5);
+    const width = this.scale.width;
+    const height = this.scale.height;
 
-    const words = ["Get", "Ready", "To", "Fight"];
-    const wordTiming = 600;
+    // Black screen covering everything
+    const blackBackground = this.add
+      .rectangle(
+        0,
+        0,
+        width,
+        height,
+        0x000000
+      )
+      .setOrigin(0)
+      .setDepth(1000);
+
+    const fightCountDown = this.add
+      .text(
+        width / 2,
+        height / 2,
+        "",
+        {
+          fontSize: "130px",
+          fontFamily: "Palatino",
+          color: "#ff0000",
+          fontStyle: "bold",
+          stroke: "#550000",
+          strokeThickness: 10,
+        }
+      )
+      .setOrigin(0.5)
+      .setDepth(1001);
+
+    const words = ["GET", "READY", "TO", "FIGHT"];
+    const wordTiming = 700;
 
     words.forEach((word, i) => {
       this.time.delayedCall(i * wordTiming, () => {
+
         fightCountDown.setText(word);
+
+        fightCountDown
+          .setScale(0.5)
+          .setAlpha(0);
+
+        this.tweens.add({
+          targets: fightCountDown,
+          scale: 1,
+          alpha: 1,
+          duration: 250,
+          ease: "Back.easeOut",
+        });
+
+        if (word === "FIGHT") {
+          fightCountDown.setFontSize("160px");
+
+          this.cameras.main.shake(
+            250,
+            0.008
+          );
+        }
       });
     });
 
-    this.time.delayedCall(wordTiming * words.length, () => {
-      fightCountDown.destroy();
-      onComplete();
-    });
+    this.time.delayedCall(
+      wordTiming * words.length,
+      () => {
+
+        // Fade countdown away
+        this.tweens.add({
+          targets: [
+            blackBackground,
+            fightCountDown
+          ],
+
+          alpha: 0,
+          duration: 400,
+
+          onComplete: () => {
+            blackBackground.destroy();
+            fightCountDown.destroy();
+
+            // NOW build the actual fight
+            onComplete();
+          },
+        });
+      }
+    );
   }
 
   createAnimations() {
@@ -194,6 +326,33 @@ export default class Fight extends Phaser.Scene {
   buildFightScene() {
     this.createAnimations();
 
+    const uiTextStyle = {
+      fontFamily: "Palatino",
+      fontSize: "22px",
+      color: "#fcc844",
+      fontStyle: "bold",
+      stroke: "#241600",
+      strokeThickness: 3,
+    };
+
+    const smallUiTextStyle = {
+      fontFamily: "Palatino",
+      fontSize: "18px",
+      color: "#fcc844",
+      fontStyle: "bold",
+      stroke: "#241600",
+      strokeThickness: 2,
+    };
+
+    const largeUiTextStyle = {
+      fontFamily: "Palatino",
+      fontSize: "32px",
+      color: "#fcc844",
+      fontStyle: "bold",
+      stroke: "#241600",
+      strokeThickness: 4,
+    };
+
     console.log("ENCOUNTER TYPE:", this.encounterType);
 
     let monsterTemplate;
@@ -222,30 +381,36 @@ export default class Fight extends Phaser.Scene {
     };
 
 
-    this.healthText = this.add.text(
+    const heroHealthStat = this.createStatBox(
+      150,
       50,
-      40,
+      240,
+      60,
       `❤️ ${RunState.player.health}/${RunState.player.maxHealth}`,
-      {
-        fontSize: "32px",
-        color: "#FF0000"
-      }
+      "#ff4d4d",
+      uiTextStyle
     );
 
-    this.staminaText = this.add.text(
+    this.heroHealthStatText =
+      heroHealthStat.text;
+
+    const heroStaminaStat = this.createStatBox(
+      400,
+      50,
       220,
-      40,
+      60,
       `⚡ ${RunState.player.stamina}/${RunState.player.maxStamina}`,
-      {
-        fontSize: "32px",
-        fontFamily: "italic bold sans-serif",
-        color: "#0AC200"
-      }
+      "#6cff5c",
+      uiTextStyle
     );
+
+    this.staminaText =
+      heroStaminaStat.text;
 
     this.damageText = this.add
       .text(640, 230, "", {
-        fontSize: "36px",
+        ...largeUiTextStyle,
+        color: "#ffb347",
       })
       .setOrigin(0.5);
     RunState.player.textureKey
@@ -279,36 +444,33 @@ export default class Fight extends Phaser.Scene {
       .setVisible(false);
 
 
-    this.add.text(185, 455, "Player", {
-      fontSize: "20px",
-    });
+    this.add.text(185, 455, "Player", uiTextStyle);
 
     this.monsterNameText = this.add.text(
       960,
       460,
       this.currentMonster.name,
-      {
-        fontSize: "20px",
-      }
+      uiTextStyle
     );
 
-    this.monsterHealthText = this.add.text(
-      980,
-      20,
+    const monsterHealthStat = this.createStatBox(
+      1120,
+      50,
+      250,
+      60,
       `❤️ ${this.currentMonster.health}/${this.currentMonster.maxHealth}`,
-      {
-        fontSize: "20px",
-        color: "#FF0000"
-      }
+      "#ff4d4d",
+      uiTextStyle
     );
+
+    this.monsterHealthText =
+      monsterHealthStat.text;
 
     this.statusText = this.add.text(
-      340,
-      520,
+      380,
+      500,
       "Choose one word from each column.",
-      {
-        fontSize: "22px",
-      }
+      uiTextStyle
     );
 
     if (this.encounterType === "boss") {
@@ -317,7 +479,7 @@ export default class Fight extends Phaser.Scene {
         720,
         "You cannot run from the boss!",
         {
-          fontSize: "18px",
+          ...smallUiTextStyle,
           color: "#ff0000",
         }
       );
@@ -325,32 +487,33 @@ export default class Fight extends Phaser.Scene {
 
     if (this.encounterType !== "boss") {
       this.reminderText = this.add.text(
-        50,
-        920,
+        500,
+        910,
         "Reminder: You can run if you can't hear the words, but running reduces stamina by 1.",
-        {
-          fontSize: "18px",
-        }
+        smallUiTextStyle
+
       );
     }
 
-    this.notificationText = this.add.text(
-      1130,
-      700,
-      "",
-      {
-        fontSize: "26px",
-        fontStyle: "italic",
-        color: "#000000",
+    this.notificationText = this.add
+      .text(
+        1130,
+        700,
+        "",
+        {
+          ...uiTextStyle,
 
-        wordWrap: {
-          width: 260,
-          useAdvancedWrap: true,
-        },
+          fontStyle: "italic bold",
 
-        align: "center",
-      }
-    ).setOrigin(0.5, 0);
+          wordWrap: {
+            width: 260,
+            useAdvancedWrap: true,
+          },
+
+          align: "center",
+        }
+      )
+      .setOrigin(0.5, 0);
 
     this.buildWordGrid();
 
@@ -361,66 +524,111 @@ export default class Fight extends Phaser.Scene {
     }
 
     //////////////////////////  Player health bar
+    ////////////////////////// Player health bar
+
     const barX = 100;
-    const barY = 500;
+    const barY = 510;
     const barWidth = 250;
     const barHeight = 28;
 
-    // dark background
+    // Decorative frame
+    this.add
+      .image(
+        barX + barWidth / 2,
+        barY + 3,
+        "heroHealthBarFrame"
+      )
+      .setDisplaySize(
+        barWidth + 50,
+        barHeight + 30
+      );
+
+    // Dark background inside frame
     this.healthBarBackground = this.add
-      .rectangle(barX, barY, barWidth, barHeight, 0x222222)
+      .rectangle(
+        barX,
+        barY,
+        barWidth,
+        barHeight,
+        0x222222
+      )
       .setOrigin(0, 0.5);
 
-    // red health
+    // Red health fill
     this.healthBar = this.add
-      .rectangle(barX, barY, barWidth, barHeight, 0xcc3333)
+      .rectangle(
+        barX,
+        barY,
+        barWidth,
+        barHeight,
+        0xcc3333
+      )
       .setOrigin(0, 0.5);
 
-    // text over bar
+    // Health number
     this.healthText = this.add
       .text(
         barX + barWidth / 2,
         barY,
         `${RunState.player.health}/${RunState.player.maxHealth}`,
         {
-          fontSize: "18px",
+          ...smallUiTextStyle,
           color: "#ffffff",
-          fontStyle: "bold",
         }
       )
       .setOrigin(0.5);
 
-    this.add.text(670, 20, `${this.currentMonster.name}`, {
-      fontSize: "32px",
-    });
-
     ///////////////////////Enemy Health Bar///////////
+    /////////////////////// Enemy Health Bar
 
     const enemyBarX = 950;
-    const enemyBarY = 500;
+    const enemyBarY = 510;
     const enemyBarWidth = 250;
     const enemyBarHeight = 28;
 
-    // dark background
+    // Decorative frame
+    this.add
+      .image(
+        enemyBarX + (enemyBarWidth / 2),
+        enemyBarY,
+        "monsterHealthBarFrame"
+      )
+      .setDisplaySize(
+        enemyBarWidth + 100,
+        enemyBarHeight + 30
+      );
+
+    // Dark background
     this.enemyHealthBarBackground = this.add
-      .rectangle(enemyBarX, enemyBarY, enemyBarWidth, enemyBarHeight, 0x222222)
+      .rectangle(
+        enemyBarX,
+        enemyBarY,
+        enemyBarWidth,
+        enemyBarHeight,
+        0x222222
+      )
       .setOrigin(0, 0.5);
 
-    // red health
+    // Red health fill
     this.enemyHealthBar = this.add
-      .rectangle(enemyBarX, enemyBarY, enemyBarWidth, enemyBarHeight, 0xcc3333)
+      .rectangle(
+        enemyBarX,
+        enemyBarY,
+        enemyBarWidth,
+        enemyBarHeight,
+        0xcc3333
+      )
       .setOrigin(0, 0.5);
 
-    // text over bar
+    // Health number
     this.enemyHealthText = this.add
       .text(
         enemyBarX + enemyBarWidth / 2,
         enemyBarY,
         `${this.currentMonster.health}/${this.currentMonster.maxHealth}`,
         {
-          fontSize: "18px",
+          ...smallUiTextStyle,
           color: "#ffffff",
-          fontStyle: "bold",
         }
       )
       .setOrigin(0.5);
@@ -430,6 +638,68 @@ export default class Fight extends Phaser.Scene {
     // new Button(this, 1180, 835, "Back", () => {
     //   this.scene.start(this.returnTo);
     // });
+  }
+
+  createStatBox(
+    x,
+    y,
+    width,
+    height,
+    text,
+    textColor,
+    textStyle
+  ) {
+    const container = this.add.container(x, y);
+
+    // Dark background
+    const bg = this.add.graphics();
+
+    bg.fillStyle(0x17130d, 0.9);
+
+    bg.fillRoundedRect(
+      -width / 2,
+      -height / 2,
+      width,
+      height,
+      10
+    );
+
+    // Gold border
+    bg.lineStyle(
+      3,
+      0x8f6b2e,
+      1
+    );
+
+    bg.strokeRoundedRect(
+      -width / 2,
+      -height / 2,
+      width,
+      height,
+      10
+    );
+
+    const statText = this.add
+      .text(
+        0,
+        0,
+        text,
+        {
+          ...textStyle,
+          color: textColor,
+        }
+      )
+      .setOrigin(0.5);
+
+    container.add([
+      bg,
+      statText
+    ]);
+
+    return {
+      container,
+      text: statText,
+    };
   }
 
   playMonsterAttack(damageToPlayer) {
@@ -482,6 +752,8 @@ export default class Fight extends Phaser.Scene {
       spacingY: 34,
 
       fontSize: "18px",
+      fontFamily: "Palatino",
+      color: "#fcc844",
 
       questions,
 
@@ -1246,25 +1518,37 @@ export default class Fight extends Phaser.Scene {
 
   updateHealthBar() {
     const healthPercent =
-      RunState.player.health / RunState.player.maxHealth;
+      RunState.player.health /
+      RunState.player.maxHealth;
 
     this.healthBar.displayWidth =
       250 * healthPercent;
 
+    // Number inside health bar
     this.healthText.setText(
       `${RunState.player.health}/${RunState.player.maxHealth}`
+    );
+
+    // Number in top stat box
+    this.heroHealthStatText.setText(
+      `❤️ ${RunState.player.health}/${RunState.player.maxHealth}`
     );
   }
 
   updateEnemyHealthBar() {
     const healthPercent =
-      this.currentMonster.health / this.currentMonster.maxHealth;
+      this.currentMonster.health /
+      this.currentMonster.maxHealth;
 
     this.enemyHealthBar.displayWidth =
       250 * healthPercent;
 
     this.enemyHealthText.setText(
       `${this.currentMonster.health}/${this.currentMonster.maxHealth}`
+    );
+
+    this.monsterHealthText.setText(
+      `❤️ ${this.currentMonster.health}/${this.currentMonster.maxHealth}`
     );
   }
 
