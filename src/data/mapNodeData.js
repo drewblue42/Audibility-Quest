@@ -46,7 +46,7 @@ export const maps = [
       { id: 0, x: 50, y: 300, type: "fight", isCheckpoint: false },
 
       // First split
-      { id: 1, x: 125, y: 235, type: "boss", isCheckpoint: false },
+      { id: 1, x: 125, y: 235, type: "fight", isCheckpoint: false },
       { id: 2, x: 110, y: 405, type: "treasure", isCheckpoint: false },
 
       // Upper branch

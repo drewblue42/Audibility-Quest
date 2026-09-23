@@ -7,6 +7,7 @@ import NodeMap from "./scenes/NodeMap";
 import InstructionsScreen from "./scenes/InstructionsScreen";
 import PotionShop from "./scenes/PotionShop"
 import Campsite from "./scenes/Campsite";
+import GameOver from "./scenes/GameOver";
 
 const config = {
   width: 1280,
@@ -20,7 +21,7 @@ const config = {
   type: Phaser.AUTO,
   backgroundColor: "#909191",
   physics: { default: "arcade", arcade: { gravity: { y: 0 } } },
-  scene: [Boot, Title, Fight, NodeMap, MapScene, InstructionsScreen, Campsite, PotionShop], // boot will auto-start first
+  scene: [Boot, Title, Fight, NodeMap, MapScene, InstructionsScreen, Campsite, PotionShop, GameOver], // boot will auto-start first
 };
 
 new Phaser.Game(config);

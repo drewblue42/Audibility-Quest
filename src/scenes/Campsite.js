@@ -47,6 +47,17 @@ export default class Campsite extends Phaser.Scene {
       `Restore Health (${this.seeRestoredHealthAmount()} HP)`,
       () => {
         this.restoreHealth();
+        RunState.achievements.fortitude = false
+        console.log("Fortitude achievements lost!!")
+        this.returnToMap();
+      }
+    );
+    new Button(
+      this,
+      this.cameras.main.centerX,
+      600,
+      `Keep going without resting`,
+      () => {
         this.returnToMap();
       }
     );

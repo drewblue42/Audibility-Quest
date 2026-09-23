@@ -1,8 +1,8 @@
 export function createBoss() {
   return {
   name: "Black Dragon",
-  health: 8,
-  maxHealth: 8,
+  health: 1,
+  maxHealth: 1,
 
   textureKey: "dragonIdle",
 

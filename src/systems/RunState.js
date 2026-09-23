@@ -12,6 +12,15 @@ export const RunState = {
     completedNodes: [],
     skipNode: false
   },
+  achievements:{
+    numDeaths: 0, //implemented
+    damageReceived: 0, //implemented
+    wordsCorrect: 190, //implemented
+    immortal: true, //implemented
+    fortitude: true, //implemented
+    warrior: false, //implemented
+    potionMaster: false //implemented
+  },
 
   boss: createBoss(),
   

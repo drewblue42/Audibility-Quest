@@ -2,8 +2,8 @@ export function createPlayer() {
     return {
       health: 5,
       maxHealth: 100,
-      stamina: 2,
-      maxStamina: 1,
+      stamina: 1,
+      maxStamina: 3,
       inventory: [],
       textureKey: "samuraiIdle",
   

@@ -60,6 +60,10 @@ export default class PotionShop extends Phaser.Scene {
         "#fc030b",
         () => {
           this.restoreHealth();
+          RunState.achievements.potionMaster = true
+          RunState.achievements.fortitude = false
+          console.log("Fortitude achievements lost!!")
+          console.log("Potion master achieved")
           this.returnToMap();
         }
       );
@@ -73,6 +77,8 @@ export default class PotionShop extends Phaser.Scene {
         "#13d102",
         () => {
           this.restoreStamina();
+          RunState.achievements.potionMaster = true
+          console.log("Potion master achieved")
           this.returnToMap();
         }
       );
@@ -86,6 +92,8 @@ export default class PotionShop extends Phaser.Scene {
         "#0390fc",
         () => {
           this.speedPotion();
+          RunState.achievements.potionMaster = true
+          console.log("Potion master achieved")
           this.returnToMap();
         }
       );
@@ -98,7 +106,8 @@ export default class PotionShop extends Phaser.Scene {
         "Your next fight is easier!",
         "#ed8b02",
         () => {
-          this.strengthPotion();
+          RunState.achievements.potionMaster = true
+          console.log("Potion master achieved")
           this.returnToMap();
         }
       );

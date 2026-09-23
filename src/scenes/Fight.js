@@ -208,19 +208,19 @@ export default class Fight extends Phaser.Scene {
 
     this.currentMonster = {
       name: monsterTemplate.name,
-    
+
       health:
         this.encounterType === "boss"
           ? RunState.boss.health
           : monsterTemplate.maxHealth,
-    
+
       maxHealth: monsterTemplate.maxHealth,
-    
+
       textureKey: monsterTemplate.textureKey,
       animations: monsterTemplate.animations,
       scale: monsterTemplate.scale,
     };
-    
+
 
     this.healthText = this.add.text(
       50,
@@ -390,9 +390,9 @@ export default class Fight extends Phaser.Scene {
       )
       .setOrigin(0.5);
 
-      this.add.text(670, 20, `${this.currentMonster.name}`, {
-        fontSize: "32px",
-      });
+    this.add.text(670, 20, `${this.currentMonster.name}`, {
+      fontSize: "32px",
+    });
 
     ///////////////////////Enemy Health Bar///////////
 
@@ -569,13 +569,71 @@ export default class Fight extends Phaser.Scene {
     this.roundReady = false;
 
     RunState.damagePlayer(damageToPlayer);
+
+    RunState.achievements.damageReceived += damageToPlayer
+
+    console.log("Total num of achievements damaged received is: " + RunState.achievements.damageReceived)
+
+
+    switch (damageToPlayer) {
+      case 0:
+        RunState.achievements.wordsCorrect += 5;
+        console.log(
+          "Player got 5 words correct, total words correct is " +
+          RunState.achievements.wordsCorrect
+        );
+        break;
+
+      case 1:
+        RunState.achievements.wordsCorrect += 4;
+        console.log(
+          "Player got 4 words correct, total words correct is " +
+          RunState.achievements.wordsCorrect
+        );
+        break;
+
+      case 2:
+        RunState.achievements.wordsCorrect += 3;
+        console.log(
+          "Player got 3 words correct, total words correct is " +
+          RunState.achievements.wordsCorrect
+        );
+        break;
+
+      case 3:
+        RunState.achievements.wordsCorrect += 2;
+        console.log(
+          "Player got 2 words correct, total words correct is " +
+          RunState.achievements.wordsCorrect
+        );
+        break;
+
+      case 4:
+        RunState.achievements.wordsCorrect += 1;
+        console.log(
+          "Player got 1 word correct, total words correct is " +
+          RunState.achievements.wordsCorrect
+        );
+        break;
+
+      default:
+        console.log(
+          "Player got 0 words correct, total words correct is " +
+          RunState.achievements.wordsCorrect
+        );
+        break;
+    }
+
+    if (RunState.achievements.wordsCorrect >= 200) {
+      RunState.achievements.warrior = true
+    }
     this.updateHealthBar();
 
     this.currentMonster.health = Math.max(
       0,
       this.currentMonster.health - damageToMonster
     );
-    
+
     if (this.encounterType === "boss") {
       RunState.boss.health = this.currentMonster.health;
     }
@@ -751,30 +809,39 @@ export default class Fight extends Phaser.Scene {
 
   playerDefeated() {
     if (this.fightEnded) return;
-  
+
+    RunState.achievements.numDeaths += 1;
+    console.log("Player died total deaths is: " + RunState.achievements.numDeaths)
+
+    RunState.achievements.immortal = false
+
+    if (RunState.achievements.damageReceived == false) {
+      console.log("Immortal achievements lost!!")
+    }
+
     this.fightEnded = true;
     this.roundReady = false;
-  
+
     if (this.encounterType === "boss") {
       RunState.boss.health =
         Math.ceil(RunState.boss.health / 4) * 4;
-  
+
       RunState.boss.health = Math.min(
         RunState.boss.health,
         RunState.boss.maxHealth
       );
-  
+
       console.log(
         "Boss revived to:",
         RunState.boss.health
       );
     }
-  
+
     if (this.grid) {
       this.grid.destroy();
       this.grid = null;
     }
-  
+
     this.showDeathScreen();
   }
 
@@ -910,14 +977,215 @@ export default class Fight extends Phaser.Scene {
 
     // Wait for Enter
     this.input.keyboard.once("keydown-ENTER", () => {
-      this.restorePlayerHealth();
+      this.playReviveAnimation();
+    });
+  }
+  playReviveAnimation() {
+    const width = this.scale.width;
+    const height = this.scale.height;
 
-      this.scene.restart({
-        nodeId: this.nodeId,
-        mapId: RunState.progress.currentMapId,
-        returnTo: this.returnTo,
-        encounterType: this.encounterType,
-      });
+    // Clear death screen / old fight visuals
+    this.children.removeAll(true);
+
+    // Dark background
+    this.add
+      .rectangle(0, 0, width, height, 0x000000)
+      .setOrigin(0);
+
+    // Recreate player in the middle
+    const revivePlayer = this.add
+      .sprite(
+        width / 2,
+        height / 2,
+        RunState.player.textureKey
+      )
+      .setScale(RunState.player.scale)
+      .setAlpha(0.3);
+
+    revivePlayer.play(RunState.player.animations.idle);
+
+    // Light beam
+    const lightBeam = this.add
+      .rectangle(
+        width / 2,
+        0,
+        220,
+        height,
+        0xfff4b0,
+        0.15
+      )
+      .setOrigin(0.5, 0);
+
+    // Glow around player
+    const glow = this.add
+      .circle(
+        width / 2,
+        height / 2,
+        100,
+        0xffffcc,
+        0.15
+      )
+      .setScale(0.5);
+
+    // Revive text
+    const reviveText = this.add
+      .text(
+        width / 2,
+        height / 2 - 180,
+        "REVIVING...",
+        {
+          fontSize: "48px",
+          color: "#fff7b2",
+          fontStyle: "bold",
+        }
+      )
+      .setOrigin(0.5);
+
+    // -------------------------
+    // HEALTH BAR
+    // -------------------------
+
+    const barWidth = 350;
+    const barHeight = 32;
+
+    const barX = width / 2 - barWidth / 2;
+    const barY = height / 2 + 180;
+
+    // Health bar background
+    this.add
+      .rectangle(
+        barX,
+        barY,
+        barWidth,
+        barHeight,
+        0x222222
+      )
+      .setOrigin(0, 0.5);
+
+    // Red health bar
+    const reviveHealthBar = this.add
+      .rectangle(
+        barX,
+        barY,
+        barWidth,
+        barHeight,
+        0xff0000
+      )
+      .setOrigin(0, 0.5)
+      .setScale(0, 1);
+
+    // Health text
+    const reviveHealthText = this.add
+      .text(
+        width / 2,
+        barY,
+        `0/${RunState.player.maxHealth}`,
+        {
+          fontSize: "20px",
+          color: "#ffffff",
+          fontStyle: "bold",
+        }
+      )
+      .setOrigin(0.5);
+
+    // -------------------------
+    // REVIVE EFFECTS
+    // -------------------------
+
+    // Fade player back in
+    this.tweens.add({
+      targets: revivePlayer,
+      alpha: 1,
+      duration: 4000,
+      ease: "Sine.easeOut",
+    });
+
+    // Pulse glow
+    this.tweens.add({
+      targets: glow,
+      scale: 1.8,
+      alpha: 0.5,
+      duration: 500,
+      yoyo: true,
+      repeat: 3,
+      ease: "Sine.easeInOut",
+    });
+
+    // Flash light beam
+    this.tweens.add({
+      targets: lightBeam,
+      alpha: 0.55,
+      duration: 400,
+      yoyo: true,
+      repeat: 4,
+      ease: "Sine.easeInOut",
+    });
+
+    // -------------------------
+    // HEALTH REFILL
+    // -------------------------
+
+    const healthCounter = {
+      value: 0,
+    };
+
+    // Fill red bar
+    this.tweens.add({
+      targets: reviveHealthBar,
+      scaleX: 1,
+      duration: 4000,
+      ease: "Sine.easeOut",
+    });
+
+    // Count health numbers up
+    this.tweens.add({
+      targets: healthCounter,
+      value: RunState.player.maxHealth,
+      duration: 4000,
+      ease: "Sine.easeOut",
+
+      onUpdate: () => {
+        const health = Math.round(
+          healthCounter.value
+        );
+
+        reviveHealthText.setText(
+          `${health}/${RunState.player.maxHealth}`
+        );
+      },
+
+      onComplete: () => {
+        // Actually restore health
+        RunState.player.health =
+          RunState.player.maxHealth;
+
+        // Force final visual state
+        reviveHealthBar.setScale(1, 1);
+
+        reviveHealthText.setText(
+          `${RunState.player.maxHealth}/${RunState.player.maxHealth}`
+        );
+
+        reviveText.setText("REVIVED");
+
+        // Final bright flash
+        this.cameras.main.flash(
+          500,
+          255,
+          255,
+          220
+        );
+
+        // Restart the fight
+        this.time.delayedCall(1500, () => {
+          this.scene.restart({
+            nodeId: this.nodeId,
+            mapId: RunState.progress.currentMapId,
+            returnTo: this.returnTo,
+            encounterType: this.encounterType,
+          });
+        });
+      },
     });
   }
 
@@ -956,7 +1224,7 @@ export default class Fight extends Phaser.Scene {
       RunState.boss.health += 4
       RunState.boss.maxHealth += 4
       console.log("BOSS HEALTH INCREASED")
-      console.log("Current Health of Boss: " + RunState.boss.maxHealth )
+      console.log("Current Health of Boss: " + RunState.boss.maxHealth)
 
       this.tweens.add({
         targets: this.player,
@@ -1027,6 +1295,15 @@ export default class Fight extends Phaser.Scene {
     }
 
     this.time.delayedCall(1200, () => {
+
+      if (
+        this.encounterType === "boss" &&
+        this.currentMonster.health <= 0
+      ) {
+        this.scene.start("gameOver");
+        return;
+      }
+
       this.scene.start(this.returnTo);
     });
   }
