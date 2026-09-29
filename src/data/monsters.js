@@ -14,7 +14,20 @@ export const MONSTERS = [
   
       scale: 6,
     },
-  ];
+    {
+      name: "Black Knight",
+      maxHealth: 1,
+  
+      textureKey: "blackKnightIdle",
+  
+      animations: {
+        idle: "blackKnight-idle",
+        attack: "blackKnight-attack",
+      },
+  
+      scale: 4,
+    },
+   ];
 
   export function getRandomMonster() {
     const index = Math.floor(Math.random() * MONSTERS.length);

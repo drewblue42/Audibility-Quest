@@ -9,6 +9,7 @@ build/
 .env
 .env.*
 !.env.example
+.venv/
 
 # Logs
 *.log
@@ -26,6 +27,7 @@ coverage/
 # Editors
 .vscode/
 .idea/
+
 
 # Operating system
 .DS_Store

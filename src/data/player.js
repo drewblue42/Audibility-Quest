@@ -1,17 +1,20 @@
 export function createPlayer() {
     return {
-      health: 5,
+      health: 1,
       maxHealth: 100,
       stamina: 1,
       maxStamina: 3,
       inventory: [],
-      textureKey: "samuraiIdle",
+      textureKey: "kiraIdle",
   
       animations: {
-        idle: "samurai-idle",
+        idle: "kira-idle",
+        hit: "kira-hit",
+        hurt: "kira-hurt",
+        death:"kira-death"
     
       },
   
-      scale: 6,
+      scale: 1.9,
     };
   }

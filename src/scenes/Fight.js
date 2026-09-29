@@ -30,10 +30,46 @@ export default class Fight extends Phaser.Scene {
       import.meta.url
     ).href;
 
-    const samuraiIdleUrl = new URL(
-      "../assets/animations/Hero/Samurai/IDLE.png",
+    const kiraIdleUrl = new URL(
+      "../assets/animations/Kira/spr_kira_idle_strip24.png",
       import.meta.url
     ).href;
+
+    const kiraHitUrl = new URL(
+      "../assets/animations/Kira/spr_kira_hit_normalized.png",
+      import.meta.url
+    ).href;
+
+    const kiraHurtUrl = new URL(
+      "../assets/animations/Kira/spr_kira_hurt_normalized.png",
+      import.meta.url
+    ).href;
+
+    const kiraDeathUrl = new URL(
+      "../assets/animations/Kira/spr_kira_death_32x2.png",
+      import.meta.url
+    ).href;
+
+    const blackKnightIdleUrl = new URL(
+      "../assets/animations/BlackKnight/hooded knight idle.png",
+      import.meta.url
+    ).href;
+
+    const blackKnightHitUrl = new URL(
+      "../assets/animations/BlackKnight/hooded knight attack.png",
+      import.meta.url
+    ).href;
+
+    this.load.spritesheet("blackKnightIdle", blackKnightIdleUrl, {
+      frameWidth: 100,
+      frameHeight: 100,
+    });
+
+    this.load.spritesheet("blackKnightAttack", blackKnightHitUrl, {
+      frameWidth: 180,
+      frameHeight: 100,
+    });
+
 
     this.load.spritesheet("skeletonIdle", skeletonIdleUrl, {
       frameWidth: 150,
@@ -50,9 +86,14 @@ export default class Fight extends Phaser.Scene {
       frameHeight: 102,
     });
 
-    this.load.spritesheet("samuraiIdle", samuraiIdleUrl, {
-      frameWidth: 96,
-      frameHeight: 96,
+    this.load.spritesheet("kiraIdle", kiraIdleUrl, {
+      frameWidth: 256,
+      frameHeight: 256,
+    })
+
+    this.load.spritesheet("kiraHit", kiraHitUrl, {
+      frameWidth: 256,
+      frameHeight: 256,
     })
 
     const dragonIdleUrl = new URL(
@@ -109,9 +150,21 @@ export default class Fight extends Phaser.Scene {
 
     this.load.image("heroHealthBarFrame", heroHealthBarUrl);
     this.load.image("monsterHealthBarFrame", monsterHealthBarUrl);
+
+    this.load.spritesheet("kiraHurt", kiraHurtUrl, {
+      frameWidth: 256,
+      frameHeight: 256,
+    });
+
+    this.load.spritesheet("kiraDeath", kiraDeathUrl, {
+      frameWidth: 256,
+      frameHeight: 256,
+    });
   }
 
   create(data) {
+
+    this.doubleKO = false;
 
     const bgBrick = this.add
       .image(
@@ -119,7 +172,8 @@ export default class Fight extends Phaser.Scene {
         this.cameras.main.centerY,
         "dungeonbrick"
       )
-      .setOrigin(0.5);
+      .setOrigin(0.5)
+      .setDepth(-20);
 
     const scaleXX = this.cameras.main.width / bgBrick.width;
     const scaleYY = this.cameras.main.height / bgBrick.height;
@@ -132,7 +186,9 @@ export default class Fight extends Phaser.Scene {
         this.cameras.main.centerY - 400,
         "dungeon"
       )
-      .setOrigin(0.5);
+      .setOrigin(0.5)
+      .setDepth(-10);
+
 
     const scaleX = this.cameras.main.width / bg.width;
     const scaleY = this.cameras.main.height / bg.height;
@@ -273,6 +329,30 @@ export default class Fight extends Phaser.Scene {
       });
     }
 
+    if (!this.anims.exists("blackKnight-idle")) {
+      this.anims.create({
+        key: "blackKnight-idle",
+        frames: this.anims.generateFrameNumbers("blackKnightIdle", {
+          start: 0,
+          end: 3,
+        }),
+        frameRate: 6,
+        repeat: -1,
+      });
+    }
+
+    if (!this.anims.exists("blackKnight-attack")) {
+      this.anims.create({
+        key: "blackKnight-attack",
+        frames: this.anims.generateFrameNumbers("blackKnightAttack", {
+          start: 0,
+          end: 16,
+        }),
+        frameRate: 10,
+        repeat: 0,
+      });
+    }
+
     if (!this.anims.exists("sword-effect")) {
       this.anims.create({
         key: "sword-effect",
@@ -286,15 +366,27 @@ export default class Fight extends Phaser.Scene {
       });
     }
 
-    if (!this.anims.exists("samurai-idle")) {
+    if (!this.anims.exists("kira-idle")) {
       this.anims.create({
-        key: "samurai-idle",
-        frames: this.anims.generateFrameNumbers("samuraiIdle", {
+        key: "kira-idle",
+        frames: this.anims.generateFrameNumbers("kiraIdle", {
           start: 0,
-          end: 9,
+          end: 23,
         }),
         frameRate: 14,
         repeat: -1,
+      });
+    }
+
+    if (!this.anims.exists("kira-hit")) {
+      this.anims.create({
+        key: "kira-hit",
+        frames: this.anims.generateFrameNumbers("kiraHit", {
+          start: 0,
+          end: 48,
+        }),
+        frameRate: 50,
+        repeat: 0,
       });
     }
 
@@ -321,9 +413,73 @@ export default class Fight extends Phaser.Scene {
         repeat: 0,
       });
     }
+
+    if (!this.anims.exists("kira-hurt")) {
+      this.anims.create({
+        key: "kira-hurt",
+
+        frames: this.anims.generateFrameNumbers(
+          "kiraHurt",
+          {
+            start: 0,
+            end: 76,
+          }
+        ),
+
+        frameRate: 50,
+        repeat: 0,
+      });
+    }
+
+    if (!this.anims.exists("kira-death")) {
+      this.anims.create({
+        key: "kira-death",
+
+        frames: this.anims.generateFrameNumbers(
+          "kiraDeath",
+          {
+            start: 0,
+            end: 63,
+          }
+        ),
+
+        frameRate: 50,
+        repeat: 0,
+      });
+    }
+
+    if (!this.anims.exists("kira-revive")) {
+      const reviveFrames =
+        this.anims.generateFrameNumbers(
+          "kiraDeath",
+          {
+            start: 0,
+            end: 63,
+          }
+        );
+
+      reviveFrames.reverse();
+
+      this.anims.create({
+        key: "kira-revive",
+
+        frames: reviveFrames,
+
+        // 64 frames / 16 fps = 4 seconds
+        frameRate: 16,
+
+        repeat: 0,
+      });
+    }
   }
 
+
+
   buildFightScene() {
+
+    if( RunState.player.health === 0){
+      this.playReviveAnimation()
+    }
     this.createAnimations();
 
     const uiTextStyle = {
@@ -420,27 +576,39 @@ export default class Fight extends Phaser.Scene {
     // Player and monster are now higher, leaving room for the word grid below.
     this.player = this.add.sprite(
       220,
-      250,
+      265,
       RunState.player.textureKey
     )
-    this.player.setScale(RunState.player.scale);
-    this.player.play(RunState.player.animations.idle);
+
+    this.player
+      .setScale(RunState.player.scale)
+      .setDepth(10);
+
+    this.player.play(
+      RunState.player.animations.idle
+    );
 
     this.monster = this.add.sprite(
       1050,
       300,
       this.currentMonster.textureKey
     );
+    
+    this.monster
+      .setScale(this.currentMonster.scale)
+      .setFlipX(true)
+      .setDepth(-1);
 
-    this.monster.setScale(this.currentMonster.scale);
-    this.monster.setFlipX(true);
-    this.monster.play(this.currentMonster.animations.idle);
+    this.monster.play(
+      this.currentMonster.animations.idle
+    );
 
 
 
     this.hitEffect = this.add
       .sprite(this.monster.x, this.monster.y, "swordEffect", 0)
       .setScale(1.5)
+      .setDepth(15)
       .setVisible(false);
 
 
@@ -702,40 +870,549 @@ export default class Fight extends Phaser.Scene {
     };
   }
 
-  playMonsterAttack(damageToPlayer) {
+  showDamageNumber(target, damage) {
+    if (damage <= 0) return;
+
+    // Start around the upper-middle part of the character
+    const startX =
+      target.x + Phaser.Math.Between(-15, 15);
+
+    const startY =
+      target.y - target.displayHeight * 0.25;
+
+    const damageNumber = this.add
+      .text(
+        startX,
+        startY,
+        `-${damage}`,
+        {
+          fontFamily: "Palatino",
+          fontSize: "52px",
+          fontStyle: "bold",
+
+          color: "#ff3333",
+
+          stroke: "#241600",
+          strokeThickness: 7,
+        }
+      )
+      .setOrigin(0.5)
+      .setDepth(100)
+      .setScale(0.4);
+
+    // -------------------------
+    // POP OUT
+    // -------------------------
+
+    this.tweens.add({
+      targets: damageNumber,
+
+      scale: 1.3,
+
+      y: startY + 40,
+
+      duration: 140,
+
+      ease: "Back.easeOut",
+
+      onComplete: () => {
+        // -------------------------
+        // FALL + FADE
+        // -------------------------
+
+        this.tweens.add({
+          targets: damageNumber,
+
+          y: startY + 70,
+
+          alpha: 0,
+
+          scale: 0.9,
+
+          duration: 750,
+
+          ease: "Quad.easeIn",
+
+          onComplete: () => {
+            damageNumber.destroy();
+          },
+        });
+      },
+    });
+  }
+
+  finishCombatRound() {
+    this.damageText.setText("");
+
+    this.statusText.setText(
+      "Choose one word from each column."
+    );
+
+    this.resetWordGrid();
+  }
+
+  playMonsterAttack(
+    damageToPlayer,
+    onImpact = null,
+    onComplete = null
+  ) {
     if (damageToPlayer <= 0) {
+      if (onComplete) {
+        onComplete();
+      }
+
       return;
     }
 
-    const originalMonsterX = this.monster.x;
+    const originalMonsterX =
+      this.monster.x;
 
-    this.monster.play(this.currentMonster.animations.attack);
+    // Move monster close to Kira
+    const attackX =
+      this.player.x + 220;
+
+    // -------------------------
+    // MONSTER ATTACK
+    // -------------------------
+
+    this.monster.play(
+      this.currentMonster.animations.attack
+    );
 
     this.tweens.add({
       targets: this.monster,
-      x: originalMonsterX - 120,
-      duration: 250,
-      yoyo: true,
+
+      x: attackX,
+
+      duration: 450,
+
+      ease: "Sine.easeOut",
+
       onComplete: () => {
-        this.monster.x = originalMonsterX;
-        this.monster.play(this.currentMonster.animations.idle);
+        // -------------------------
+        // IMPACT
+        // -------------------------
+
+        this.cameras.main.shake(
+          150,
+          0.006
+        );
+
+        if (onImpact) {
+          onImpact();
+        }
+
+        // -------------------------
+        // PLAYER DIED
+        // -------------------------
+
+        if (
+          RunState.player.health <= 0
+        ) {
+          // Move monster back
+          this.tweens.add({
+            targets: this.monster,
+
+            x: originalMonsterX,
+
+            duration: 450,
+
+            ease: "Sine.easeInOut",
+
+            onComplete: () => {
+              this.monster.play(
+                this.currentMonster.animations.idle
+              );
+
+              if (onComplete) {
+                onComplete();
+              }
+            },
+          });
+
+          return;
+        }
+
+        // -------------------------
+        // KIRA HURT
+        // -------------------------
+
+        this.player.play(
+          RunState.player.animations.hurt
+        );
+
+        this.player.once(
+          "animationcomplete-kira-hurt",
+          () => {
+            this.player.play(
+              RunState.player.animations.idle
+            );
+
+            // -------------------------
+            // MONSTER RETURNS
+            // -------------------------
+
+            this.tweens.add({
+              targets: this.monster,
+
+              x: originalMonsterX,
+
+              duration: 450,
+
+              ease: "Sine.easeInOut",
+
+              onComplete: () => {
+                this.monster.play(
+                  this.currentMonster.animations.idle
+                );
+
+                if (onComplete) {
+                  onComplete();
+                }
+              },
+            });
+          }
+        );
       },
     });
-
-    this.time.delayedCall(250, () => {
-      this.cameras.main.shake(150, 0.006);
-
+  }
+  playSimultaneousClash(
+    damageToMonster,
+    damageToPlayer
+  ) {
+    const originalPlayerX = this.player.x;
+    const originalPlayerY = this.player.y;
+  
+    const originalMonsterX = this.monster.x;
+    const originalMonsterY = this.monster.y;
+  
+    const centerX =
+      this.cameras.main.centerX;
+  
+    // Leave a little space between them.
+    const playerAttackX =
+      centerX - 110;
+  
+    const monsterAttackX =
+      centerX + 110;
+  
+    // Prevent any new input while fighting.
+    this.roundReady = false;
+  
+    this.statusText.setText(
+      "Both fighters charge!"
+    );
+  
+    // ==========================================
+    // RUSH TO THE CENTER AT THE SAME TIME
+    // ==========================================
+  
+    let arrivals = 0;
+  
+    const onArrived = () => {
+      arrivals += 1;
+  
+      if (arrivals === 2) {
+        startClash();
+      }
+    };
+  
+    this.tweens.add({
+      targets: this.player,
+  
+      x: playerAttackX,
+  
+      duration: 450,
+  
+      ease: "Sine.easeOut",
+  
+      onComplete: onArrived,
+    });
+  
+    this.tweens.add({
+      targets: this.monster,
+  
+      x: monsterAttackX,
+  
+      duration: 450,
+  
+      ease: "Sine.easeOut",
+  
+      onComplete: onArrived,
+    });
+  
+  
+    // ==========================================
+    // BOTH ATTACK
+    // ==========================================
+  
+    const startClash = () => {
+      this.statusText.setText(
+        "The fighters clash!"
+      );
+  
+      this.player.play(
+        RunState.player.animations.hit
+      );
+  
+      this.monster.play(
+        this.currentMonster.animations.attack
+      );
+  
+      // ----------------------------------------
+      // IMPACT
+      // ----------------------------------------
+  
+      // Tune this depending on where the actual
+      // weapon impact occurs in Kira's animation.
+      this.time.delayedCall(
+        500,
+        () => {
+          this.cameras.main.shake(
+            180,
+            0.008
+          );
+  
+          // =====================================
+          // BOTH DAMAGE NUMBERS APPEAR TOGETHER
+          // =====================================
+  
+          this.showDamageNumber(
+            this.monster,
+            damageToMonster
+          );
+  
+          this.showDamageNumber(
+            this.player,
+            damageToPlayer
+          );
+  
+  
+          // =====================================
+          // DAMAGE BOTH SIDES AT THE SAME TIME
+          // =====================================
+  
+          this.currentMonster.health =
+            Math.max(
+              0,
+              this.currentMonster.health -
+                damageToMonster
+            );
+  
+          RunState.damagePlayer(
+            damageToPlayer
+          );
+  
+  
+          // Track damage received
+          RunState.achievements.damageReceived +=
+            damageToPlayer;
+  
+  
+          // Persist boss health
+          if (
+            this.encounterType === "boss"
+          ) {
+            RunState.boss.health =
+              this.currentMonster.health;
+          }
+  
+  
+          // =====================================
+          // UPDATE BOTH HEALTH BARS
+          // =====================================
+  
+          this.updateEnemyHealthBar();
+          this.updateHealthBar();
+  
+  
+          // =====================================
+          // HIT FLASHES
+          // =====================================
+  
+          if (damageToMonster > 0) {
+            this.monster.setAlpha(0.45);
+  
+            this.time.delayedCall(
+              120,
+              () => {
+                this.monster.setAlpha(1);
+              }
+            );
+          }
+  
+          if (damageToPlayer > 0) {
+            this.player.setAlpha(0.55);
+  
+            this.time.delayedCall(
+              120,
+              () => {
+                this.player.setAlpha(1);
+              }
+            );
+          }
+        }
+      );
+  
+  
+      // ==========================================
+      // WAIT FOR THE CLASH, THEN RETURN
+      // ==========================================
+  
+      this.time.delayedCall(
+        1100,
+        () => {
+          // Put both into idle while retreating.
+          this.player.play(
+            RunState.player.animations.idle
+          );
+  
+          this.monster.play(
+            this.currentMonster.animations.idle
+          );
+  
+          returnToSides();
+        }
+      );
+    };
+  
+  
+    // ==========================================
+    // BOTH RETURN AT THE SAME TIME
+    // ==========================================
+  
+    const returnToSides = () => {
+      let returned = 0;
+  
+      const onReturned = () => {
+        returned += 1;
+  
+        if (returned === 2) {
+          determineOutcome();
+        }
+      };
+  
       this.tweens.add({
         targets: this.player,
-        alpha: 0.3,
-        duration: 100,
-        yoyo: true,
-        repeat: 2,
-        onComplete: () => {
-          this.player.alpha = 1;
-        },
+  
+        x: originalPlayerX,
+        y: originalPlayerY,
+  
+        duration: 450,
+  
+        ease: "Sine.easeInOut",
+  
+        onComplete: onReturned,
       });
-    });
+  
+      this.tweens.add({
+        targets: this.monster,
+  
+        x: originalMonsterX,
+        y: originalMonsterY,
+  
+        duration: 450,
+  
+        ease: "Sine.easeInOut",
+  
+        onComplete: onReturned,
+      });
+    };
+  
+  
+    // ==========================================
+    // ONLY NOW DETERMINE WHO DIED
+    // ==========================================
+  
+    const determineOutcome = () => {
+      const playerDead =
+        RunState.player.health <= 0;
+  
+      const monsterDead =
+        this.currentMonster.health <= 0;
+  
+  
+      // -----------------------------------------
+      // DOUBLE KO
+      // -----------------------------------------
+  
+      if (playerDead && monsterDead) {
+        this.statusText.setText(
+          "Both fighters fall!"
+        );
+      
+        // Remember that the enemy also died
+        this.doubleKO = true;
+      
+        // The node was successfully defeated
+        RunState.completeNode(this.nodeId);
+      
+        this.time.delayedCall(
+          500,
+          () => {
+            this.playerDefeated();
+          }
+        );
+      
+        return;
+      }
+  
+  
+      // -----------------------------------------
+      // PLAYER DIED
+      // -----------------------------------------
+  
+      if (playerDead) {
+        this.statusText.setText(
+          "The player was defeated!"
+        );
+  
+        this.time.delayedCall(
+          500,
+          () => {
+            this.playerDefeated();
+          }
+        );
+  
+        return;
+      }
+  
+  
+      // -----------------------------------------
+      // MONSTER DIED
+      // -----------------------------------------
+  
+      if (monsterDead) {
+        this.statusText.setText(
+          `${this.currentMonster.name} was defeated!`
+        );
+  
+        this.time.delayedCall(
+          500,
+          () => {
+            this.endFight(true);
+          }
+        );
+  
+        return;
+      }
+  
+  
+      // -----------------------------------------
+      // BOTH SURVIVED
+      // -----------------------------------------
+  
+      this.statusText.setText(
+        "Both fighters return to position."
+      );
+  
+      this.time.delayedCall(
+        700,
+        () => {
+          this.finishCombatRound();
+        }
+      );
+    };
   }
 
   buildWordGrid() {
@@ -825,149 +1502,200 @@ export default class Fight extends Phaser.Scene {
 
   resolveResearcherScore(researcherInput) {
     if (this.fightEnded) return;
-
-    const score = getCombatScore(researcherInput);
-
+  
+    const score =
+      getCombatScore(researcherInput);
+  
     if (!score) {
       this.statusText.setText(
         `Unsupported researcher score: ${researcherInput}`
       );
+  
       return;
     }
-
-    const damageToMonster = score.monsterDamage;
-    const damageToPlayer = score.playerDamage;
-
+  
+    const damageToMonster =
+      score.monsterDamage;
+  
+    const damageToPlayer =
+      score.playerDamage;
+  
+    // Lock input during combat animation
     this.roundReady = false;
-
-    RunState.damagePlayer(damageToPlayer);
-
-    RunState.achievements.damageReceived += damageToPlayer
-
-    console.log("Total num of achievements damaged received is: " + RunState.achievements.damageReceived)
-
-
+  
+  
+    // ==========================================
+    // TRACK WORDS CORRECT
+    // ==========================================
+  
     switch (damageToPlayer) {
       case 0:
-        RunState.achievements.wordsCorrect += 5;
-        console.log(
-          "Player got 5 words correct, total words correct is " +
-          RunState.achievements.wordsCorrect
-        );
+        RunState.achievements.wordsCorrect +=
+          5;
         break;
-
+  
       case 1:
-        RunState.achievements.wordsCorrect += 4;
-        console.log(
-          "Player got 4 words correct, total words correct is " +
-          RunState.achievements.wordsCorrect
-        );
+        RunState.achievements.wordsCorrect +=
+          4;
         break;
-
+  
       case 2:
-        RunState.achievements.wordsCorrect += 3;
-        console.log(
-          "Player got 3 words correct, total words correct is " +
-          RunState.achievements.wordsCorrect
-        );
+        RunState.achievements.wordsCorrect +=
+          3;
         break;
-
+  
       case 3:
-        RunState.achievements.wordsCorrect += 2;
-        console.log(
-          "Player got 2 words correct, total words correct is " +
-          RunState.achievements.wordsCorrect
-        );
+        RunState.achievements.wordsCorrect +=
+          2;
         break;
-
+  
       case 4:
-        RunState.achievements.wordsCorrect += 1;
-        console.log(
-          "Player got 1 word correct, total words correct is " +
-          RunState.achievements.wordsCorrect
-        );
+        RunState.achievements.wordsCorrect +=
+          1;
         break;
-
+  
       default:
-        console.log(
-          "Player got 0 words correct, total words correct is " +
-          RunState.achievements.wordsCorrect
-        );
         break;
     }
-
-    if (RunState.achievements.wordsCorrect >= 200) {
-      RunState.achievements.warrior = true
+  
+  
+    // ==========================================
+    // WARRIOR ACHIEVEMENT
+    // ==========================================
+  
+    if (
+      RunState.achievements.wordsCorrect >=
+      200
+    ) {
+      RunState.achievements.warrior =
+        true;
     }
-    this.updateHealthBar();
-
-    this.currentMonster.health = Math.max(
-      0,
-      this.currentMonster.health - damageToMonster
+  
+  
+    // Clear any old damage text
+    this.damageText.setText("");
+  
+  
+    // ==========================================
+    // STATUS MESSAGE
+    // ==========================================
+  
+    const monsterPointWord =
+      damageToMonster === 1
+        ? "point"
+        : "points";
+  
+    const playerPointWord =
+      damageToPlayer === 1
+        ? "point"
+        : "points";
+  
+    this.statusText.setText(
+      `Player deals ${damageToMonster} ${monsterPointWord} while ${this.currentMonster.name} deals ${damageToPlayer} ${playerPointWord}!`
     );
-
-    if (this.encounterType === "boss") {
-      RunState.boss.health = this.currentMonster.health;
-    }
-
-    this.updateEnemyHealthBar()
-    this.healthText.setText(
-      `❤️ ${RunState.player.health}/${RunState.player.maxHealth}`
+  
+  
+    // ==========================================
+    // SIMULTANEOUS CLASH
+    // ==========================================
+  
+    this.playSimultaneousClash(
+      damageToMonster,
+      damageToPlayer
     );
+  }
 
-    this.monsterHealthText.setText(
-      `HP: ${this.currentMonster.health}/${this.currentMonster.maxHealth}`
-    );
+  startMonsterTurn(damageToPlayer) {
+    const pointWord =
+      damageToPlayer === 1
+        ? "point"
+        : "points";
 
-    this.damageText.setText(
-      `Monster -${damageToMonster}     Player -${damageToPlayer}`
-    );
+    // -------------------------
+    // NO DAMAGE
+    // -------------------------
 
-    this.animateAttack(score);
-
-    const playerDefeated = RunState.player.health <= 0;
-    const monsterDefeated = this.currentMonster.health <= 0;
-
-    if (playerDefeated && monsterDefeated) {
+    if (damageToPlayer <= 0) {
       this.statusText.setText(
-        "Both the player and monster were defeated!"
+        `${this.currentMonster.name} deals no damage!`
       );
 
-      this.time.delayedCall(700, () => {
-        this.endFight(true);
+      this.time.delayedCall(900, () => {
+        this.finishCombatRound();
       });
 
       return;
     }
 
-    if (playerDefeated) {
-      this.statusText.setText("The player was defeated!");
+    // -------------------------
+    // MONSTER DAMAGE MESSAGE
+    // -------------------------
 
-      this.time.delayedCall(700, () => {
-        this.playerDefeated();
-      });
+    this.statusText.setText(
+      `${this.currentMonster.name} deals ${damageToPlayer} ${pointWord} of damage to Player!`
+    );
 
-      return;
-    }
+    // -------------------------
+    // MONSTER ATTACK
+    // -------------------------
 
-    if (monsterDefeated) {
-      this.time.delayedCall(700, () => {
-        this.endFight(true);
-      });
+    this.playMonsterAttack(
+      damageToPlayer,
 
-      return;
-    }
+      // ==========================
+      // IMPACT
+      // ==========================
 
-    this.time.delayedCall(1200, () => {
-      if (this.fightEnded) return;
+      () => {
+        // Track damage
+        RunState.achievements.damageReceived +=
+          damageToPlayer;
 
-      this.damageText.setText("");
-      this.statusText.setText(
-        "Choose one word from each column."
-      );
+        // Apply damage AT IMPACT
+        RunState.damagePlayer(
+          damageToPlayer
+        );
 
-      this.resetWordGrid();
-    });
+        // Floating -number
+        this.showDamageNumber(
+          this.player,
+          damageToPlayer
+        );
+
+        // Update health bar
+        this.updateHealthBar();
+      },
+
+      // ==========================
+      // ATTACK FINISHED
+      // ==========================
+
+      () => {
+        // Player died
+        if (RunState.player.health <= 0) {
+          this.statusText.setText(
+            "The player was defeated!"
+          );
+
+          this.time.delayedCall(
+            600,
+            () => {
+              this.playerDefeated();
+            }
+          );
+
+          return;
+        }
+
+        // Next round
+        this.time.delayedCall(
+          700,
+          () => {
+            this.finishCombatRound();
+          }
+        );
+      }
+    );
   }
 
   playSwordEffect() {
@@ -977,99 +1705,200 @@ export default class Fight extends Phaser.Scene {
       .play("sword-effect");
   }
 
+  playPlayerAttack(
+    originalPlayerX,
+    attackX,
+    onImpact = null,
+    onAttackComplete = null
+  ) {
+    this.player.setDepth(10);
+
+    // -------------------------
+    // MOVE TO ENEMY
+    // -------------------------
+
+    this.tweens.add({
+      targets: this.player,
+
+      x: attackX,
+
+      duration: 400,
+
+      ease: "Sine.easeOut",
+
+      onComplete: () => {
+        // -------------------------
+        // ATTACK ANIMATION
+        // -------------------------
+
+        this.player.play("kira-hit");
+
+        // Kira animation is:
+        //
+        // 86 frames / 50fps
+        // ≈ 1.72 seconds
+        //
+        // About halfway through is a good
+        // impact point.
+
+        this.time.delayedCall(
+          850,
+          () => {
+            this.cameras.main.shake(
+              100,
+              0.004
+            );
+
+            if (onImpact) {
+              onImpact();
+            }
+          }
+        );
+
+        // -------------------------
+        // ATTACK FINISHED
+        // -------------------------
+
+        this.player.once(
+          "animationcomplete-kira-hit",
+          () => {
+            this.player.play(
+              RunState.player.animations.idle
+            );
+
+            // -------------------------
+            // MOVE BACK
+            // -------------------------
+
+            this.tweens.add({
+              targets: this.player,
+
+              x: originalPlayerX,
+
+              duration: 400,
+
+              ease: "Sine.easeInOut",
+
+              onComplete: () => {
+                if (onAttackComplete) {
+                  onAttackComplete();
+                }
+              },
+            });
+          }
+        );
+      },
+    });
+  }
 
 
-  animateAttack(score) {
+  animateAttack(score, onComplete = null) {
     const damageToMonster = score.monsterDamage;
     const damageToPlayer = score.playerDamage;
 
     const originalPlayerX = this.player.x;
     const originalPlayerY = this.player.y;
-    const originalMonsterX = this.monster.x;
 
     this.playMonsterAttack(damageToPlayer);
-    this.statusText.setText(score.message);
+
+    this.statusText.setText(
+      score.message
+    );
 
     switch (score.behavior) {
       case "miss":
         this.tweens.add({
           targets: this.player,
+
           x: originalPlayerX + 150,
           y: originalPlayerY + 40,
           angle: 25,
+
           duration: 500,
+
           yoyo: true,
+
           onComplete: () => {
             this.player.setAngle(0);
-            this.player.x = originalPlayerX;
-            this.player.y = originalPlayerY;
+            this.player.x =
+              originalPlayerX;
+
+            this.player.y =
+              originalPlayerY;
+
+            if (onComplete) {
+              onComplete();
+            }
           },
         });
 
-        this.cameras.main.shake(200, 0.01);
+        this.cameras.main.shake(
+          200,
+          0.01
+        );
+
         break;
 
       case "strong":
-        this.time.delayedCall(350, () => {
-          this.playSwordEffect();
-        });
+        this.playPlayerAttack(
+          originalPlayerX,
+          originalPlayerX + 620,
+          onComplete
+        );
 
-        this.tweens.add({
-          targets: this.player,
-          x: originalPlayerX + 720,
-          duration: 500,
-          yoyo: true,
-          onComplete: () => {
-            this.player.x = originalPlayerX;
-          },
-        });
+        this.time.delayedCall(
+          900,
+          () => {
+            //this.playSwordEffect();
 
-        this.tweens.add({
-          targets: this.monster,
-          x: originalMonsterX + 25,
-          duration: 200,
-          yoyo: true,
-          repeat: 3,
-          onComplete: () => {
-            this.monster.x = originalMonsterX;
-          },
-        });
+            this.cameras.main.shake(
+              200,
+              0.008
+            );
+          }
+        );
 
         break;
 
       case "normal":
-        this.time.delayedCall(350, () => {
-          this.playSwordEffect();
-        });
+        this.playPlayerAttack(
+          originalPlayerX,
+          originalPlayerX + 620,
+          onComplete
+        );
 
-        this.tweens.add({
-          targets: this.player,
-          x: originalPlayerX + 620,
-          duration: 500,
-          yoyo: true,
-          onComplete: () => {
-            this.player.x = originalPlayerX;
-          },
-        });
+        this.time.delayedCall(
+          900,
+          () => {
+            //this.playSwordEffect();
 
-        this.tweens.add({
-          targets: this.monster,
-          alpha: 0.35,
-          duration: 500,
-          yoyo: true,
-          onComplete: () => {
-            this.monster.alpha = 1;
-          },
-        });
+            this.monster.setAlpha(
+              0.35
+            );
+
+            this.time.delayedCall(
+              150,
+              () => {
+                this.monster.setAlpha(1);
+              }
+            );
+          }
+        );
 
         break;
 
       default:
-        console.warn(`Unknown combat behavior: ${score.behavior}`);
+        console.warn(
+          `Unknown combat behavior: ${score.behavior}`
+        );
 
         this.statusText.setText(
           `Unknown combat behavior: ${score.behavior}`
         );
+
+        if (onComplete) {
+          onComplete();
+        }
 
         break;
     }
@@ -1083,38 +1912,44 @@ export default class Fight extends Phaser.Scene {
     if (this.fightEnded) return;
 
     RunState.achievements.numDeaths += 1;
-    console.log("Player died total deaths is: " + RunState.achievements.numDeaths)
-
-    RunState.achievements.immortal = false
-
-    if (RunState.achievements.damageReceived == false) {
-      console.log("Immortal achievements lost!!")
-    }
+    RunState.achievements.immortal = false;
 
     this.fightEnded = true;
     this.roundReady = false;
-
-    if (this.encounterType === "boss") {
-      RunState.boss.health =
-        Math.ceil(RunState.boss.health / 4) * 4;
-
-      RunState.boss.health = Math.min(
-        RunState.boss.health,
-        RunState.boss.maxHealth
-      );
-
-      console.log(
-        "Boss revived to:",
-        RunState.boss.health
-      );
-    }
 
     if (this.grid) {
       this.grid.destroy();
       this.grid = null;
     }
 
-    this.showDeathScreen();
+    if (this.encounterType === "boss") {
+      RunState.boss.health =
+        Math.ceil(
+          RunState.boss.health / 4
+        ) * 4;
+
+      RunState.boss.health =
+        Math.min(
+          RunState.boss.health,
+          RunState.boss.maxHealth
+        );
+    }
+
+    // Stop whatever animation is currently playing
+    this.player.stop();
+
+    // Play death animation
+    this.player.play(
+      RunState.player.animations.death
+    );
+
+    // Wait until death animation is completely finished
+    this.player.once(
+      "animationcomplete-kira-death",
+      () => {
+        this.showDeathScreen();
+      }
+    );
   }
 
   showDeathScreen() {
@@ -1269,12 +2104,25 @@ export default class Fight extends Phaser.Scene {
       .sprite(
         width / 2,
         height / 2,
-        RunState.player.textureKey
+        "kiraDeath",
+        63
       )
       .setScale(RunState.player.scale)
       .setAlpha(0.3);
 
-    revivePlayer.play(RunState.player.animations.idle);
+    // Play death animation BACKWARDS
+    revivePlayer.play("kira-revive");
+
+    // Once she is standing again,
+    // switch to normal idle.
+    revivePlayer.once(
+      "animationcomplete-kira-revive",
+      () => {
+        revivePlayer.play(
+          RunState.player.animations.idle
+        );
+      }
+    );
 
     // Light beam
     const lightBeam = this.add
@@ -1450,12 +2298,52 @@ export default class Fight extends Phaser.Scene {
 
         // Restart the fight
         this.time.delayedCall(1500, () => {
-          this.scene.restart({
-            nodeId: this.nodeId,
-            mapId: RunState.progress.currentMapId,
-            returnTo: this.returnTo,
-            encounterType: this.encounterType,
-          });
+          this.time.delayedCall(
+            1500,
+            () => {
+              // ===================================
+              // DOUBLE KO
+              // ===================================
+          
+              if (this.doubleKO) {
+                // Boss died too
+                if (
+                  this.encounterType === "boss" &&
+                  this.currentMonster.health <= 0
+                ) {
+                  this.scene.start("gameOver");
+                  return;
+                }
+          
+                // Normal monster died too,
+                // so return to the map.
+                this.scene.start(
+                  this.returnTo,
+                  {
+                    mapId:
+                      RunState.progress.currentMapId,
+                    nodeId: this.nodeId,
+                  }
+                );
+          
+                return;
+              }
+          
+          
+              // ===================================
+              // NORMAL PLAYER DEATH
+              // ===================================
+          
+              this.scene.restart({
+                nodeId: this.nodeId,
+                mapId:
+                  RunState.progress.currentMapId,
+                returnTo: this.returnTo,
+                encounterType:
+                  this.encounterType,
+              });
+            }
+          );
         });
       },
     });

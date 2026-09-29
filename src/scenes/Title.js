@@ -49,8 +49,8 @@ export default class Title extends Phaser.Scene {
       volume: 0.2,
     });
 
-    // this.titleMusic.play();
-    // this.titleMusic.setSeek(6);
+    this.titleMusic.play();
+    this.titleMusic.setSeek(6);
 
     this.musicOn = false;
 

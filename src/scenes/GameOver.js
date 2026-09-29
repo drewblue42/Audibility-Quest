@@ -7,98 +7,254 @@ export default class GameOver extends Phaser.Scene {
     super({ key: "gameOver" });
   }
 
+  preload() {
+    const gameOverUrl = new URL(
+      "../assets/images/background/treasureroom.png",
+      import.meta.url
+    ).toString();
+
+    this.load.image("treasure", gameOverUrl);
+  }
+
   create() {
+    const width = this.scale.width;
+    const height = this.scale.height;
     const centerX = this.cameras.main.centerX;
 
+    // -------------------------
+    // BACKGROUND
+    // -------------------------
+
+    const bg = this.add
+      .image(
+        centerX,
+        this.cameras.main.centerY,
+        "treasure"
+      )
+      .setOrigin(0.5);
+
+    const scaleX =
+      width / bg.width;
+
+    const scaleY =
+      height / bg.height;
+
+    const scale =
+      Math.max(scaleX, scaleY);
+
+    bg.setScale(scale);
+
+    // Dark overlay so text is readable
     this.add
-      .text(centerX, 80, "RUN COMPLETE", {
-        fontSize: "64px",
-        color: "#ffffff",
-        fontStyle: "bold",
-      })
+      .rectangle(
+        0,
+        0,
+        width,
+        height,
+        0x000000,
+        0.45
+      )
+      .setOrigin(0);
+
+    // -------------------------
+    // TEXT STYLES
+    // -------------------------
+
+    const titleStyle = {
+      fontFamily: "Palatino",
+      fontSize: "64px",
+      color: "#fcc844",
+      fontStyle: "bold",
+      stroke: "#241600",
+      strokeThickness: 7,
+      align: "center",
+    };
+
+    const headingStyle = {
+      fontFamily: "Palatino",
+      fontSize: "36px",
+      color: "#fcc844",
+      fontStyle: "bold",
+      stroke: "#241600",
+      strokeThickness: 4,
+      align: "center",
+    };
+
+    const bodyStyle = {
+      fontFamily: "Palatino",
+      fontSize: "24px",
+      color: "#fff1a8",
+      fontStyle: "bold",
+      stroke: "#241600",
+      strokeThickness: 3,
+    };
+
+    const smallStyle = {
+      fontFamily: "Palatino",
+      fontSize: "18px",
+      color: "#fff1a8",
+      fontStyle: "bold",
+      stroke: "#241600",
+      strokeThickness: 2,
+    };
+
+    // -------------------------
+    // TITLE
+    // -------------------------
+
+    this.add
+      .text(
+        centerX,
+        80,
+        "RUN COMPLETE",
+        titleStyle
+      )
       .setOrigin(0.5);
 
     this.add
-      .text(centerX, 150, "Your Results", {
-        fontSize: "32px",
-        color: "#dddddd",
-      })
+      .text(
+        centerX,
+        145,
+        "Your Results",
+        headingStyle
+      )
       .setOrigin(0.5);
 
-    // Stats
-    this.add.text(
-      150,
-      230,
-      `Deaths: ${RunState.achievements.numDeaths}`,
-      {
-        fontSize: "26px",
-        color: "#ffffff",
-      }
+    // -------------------------
+    // STATS PANEL
+    // -------------------------
+
+    const statPanelX = centerX;
+    const statPanelY = 275;
+    const statPanelWidth = 620;
+    const statPanelHeight = 150;
+
+    const statsPanel = this.add.graphics();
+
+    statsPanel.fillStyle(
+      0x17130d,
+      0.9
     );
 
-    this.add.text(
-      150,
-      275,
-      `Damage Received: ${RunState.achievements.damageReceived}`,
-      {
-        fontSize: "26px",
-        color: "#ffffff",
-      }
+    statsPanel.fillRoundedRect(
+      statPanelX - statPanelWidth / 2,
+      statPanelY - statPanelHeight / 2,
+      statPanelWidth,
+      statPanelHeight,
+      14
     );
 
-    this.add.text(
-      150,
-      320,
-      `Words Correct: ${RunState.achievements.wordsCorrect}`,
-      {
-        fontSize: "26px",
-        color: "#ffffff",
-      }
+    statsPanel.lineStyle(
+      3,
+      0x8f6b2e,
+      1
+    );
+
+    statsPanel.strokeRoundedRect(
+      statPanelX - statPanelWidth / 2,
+      statPanelY - statPanelHeight / 2,
+      statPanelWidth,
+      statPanelHeight,
+      14
     );
 
     this.add
-      .text(centerX, 400, "Achievements", {
-        fontSize: "36px",
-        color: "#ffd700",
-        fontStyle: "bold",
-      })
+      .text(
+        centerX - 250,
+        215,
+        `Deaths: ${RunState.achievements.numDeaths}`,
+        bodyStyle
+      );
+
+    this.add
+      .text(
+        centerX - 250,
+        260,
+        `Damage Received: ${RunState.achievements.damageReceived}`,
+        bodyStyle
+      );
+
+    this.add
+      .text(
+        centerX - 250,
+        305,
+        `Words Correct: ${RunState.achievements.wordsCorrect}`,
+        bodyStyle
+      );
+
+    // -------------------------
+    // ACHIEVEMENTS TITLE
+    // -------------------------
+
+    this.add
+      .text(
+        centerX,
+        400,
+        "Achievements",
+        headingStyle
+      )
       .setOrigin(0.5);
+
+    // -------------------------
+    // ACHIEVEMENTS
+    // -------------------------
 
     const achievements = [
       {
         name: "Immortal",
-        unlocked: RunState.achievements.immortal,
-        description: "Beat the game without dying.",
+        unlocked:
+          RunState.achievements.immortal,
+
+        description:
+          "Beat the game without dying.",
       },
       {
         name: "Fortitude",
-        unlocked: RunState.achievements.fortitude,
-        description: "Beat the game without gaining back any lost life from campsites/potions.",
+        unlocked:
+          RunState.achievements.fortitude,
+
+        description:
+          "Beat the game without gaining back any lost life from campsites/potions.",
       },
       {
         name: "Warrior",
-        unlocked: RunState.achievements.warrior,
-        description: "More than 200 words correct",
+        unlocked:
+          RunState.achievements.warrior,
+
+        description:
+          "More than 200 words correct.",
       },
       {
         name: "Potion Master",
-        unlocked: RunState.achievements.potionMaster,
-        description: "Beat the game after visiting the potion shop.",
+        unlocked:
+          RunState.achievements.potionMaster,
+
+        description:
+          "Beat the game after visiting the potion shop.",
       },
     ];
 
-    achievements.forEach((achievement, index) => {
-      const x = 250 + index * 260;
-      const y = 510;
+    achievements.forEach(
+      (achievement, index) => {
+        const x =
+          250 + index * 260;
 
-      this.createAchievement(
-        x,
-        y,
-        achievement.name,
-        achievement.description,
-        achievement.unlocked
-      );
-    });
+        const y = 510;
+
+        this.createAchievement(
+          x,
+          y,
+          achievement.name,
+          achievement.description,
+          achievement.unlocked,
+          smallStyle
+        );
+      }
+    );
+
+    // -------------------------
+    // DESCRIPTION PANEL
+    // -------------------------
 
     this.descriptionText = this.add
       .text(
@@ -106,80 +262,175 @@ export default class GameOver extends Phaser.Scene {
         680,
         "Hover over an achievement to see its description.",
         {
-          fontSize: "22px",
-          color: "#ffffff",
-          backgroundColor: "#000000",
+          ...bodyStyle,
+
+          backgroundColor:
+            "#17130d",
+
           padding: {
-            x: 16,
-            y: 12,
+            x: 20,
+            y: 14,
           },
+
           wordWrap: {
-            width: 700,
+            width: 750,
+            useAdvancedWrap: true,
           },
+
           align: "center",
         }
       )
       .setOrigin(0.5);
 
-    new Button(this, centerX, 800, "Play Again", () => {
-      RunState.resetRun();
-      this.scene.start("nodeMap");
-    });
+    // -------------------------
+    // PLAY AGAIN BUTTON
+    // -------------------------
+
+    new Button(
+      this,
+      centerX,
+      820,
+      "Play Again",
+      () => {
+        RunState.resetRun();
+        this.scene.start("nodeMap");
+      }
+    );
   }
 
-  createAchievement(x, y, name, description, unlocked) {
-    const background = this.add
+  createAchievement(
+    x,
+    y,
+    name,
+    description,
+    unlocked,
+    textStyle
+  ) {
+    // -------------------------
+    // CARD BACKGROUND
+    // -------------------------
+
+    const background =
+      this.add.graphics();
+
+    const fillColor =
+      unlocked
+        ? 0x2b2416
+        : 0x151515;
+
+    const borderColor =
+      unlocked
+        ? 0xc89b3c
+        : 0x555555;
+
+    background.fillStyle(
+      fillColor,
+      0.95
+    );
+
+    background.fillRoundedRect(
+      x - 105,
+      y - 50,
+      210,
+      100,
+      12
+    );
+
+    background.lineStyle(
+      3,
+      borderColor,
+      1
+    );
+
+    background.strokeRoundedRect(
+      x - 105,
+      y - 50,
+      210,
+      100,
+      12
+    );
+
+    // Invisible hit area
+    const hitArea = this.add
       .rectangle(
         x,
         y,
         210,
         100,
-        unlocked ? 0x3a7d44 : 0x333333
+        0xffffff,
+        0
       )
-      .setStrokeStyle(
-        4,
-        unlocked ? 0xffd700 : 0x666666
-      )
-      .setInteractive({ useHandCursor: true });
+      .setInteractive({
+        useHandCursor: true,
+      });
 
-    const status = unlocked ? "✓" : "🔒";
+    const status =
+      unlocked
+        ? "✓"
+        : "🔒";
 
-    this.add
-      .text(x, y - 15, `${status} ${name}`, {
-        fontSize: "22px",
-        color: unlocked ? "#ffffff" : "#888888",
-        fontStyle: "bold",
-      })
-      .setOrigin(0.5);
+    const titleText =
+      this.add
+        .text(
+          x,
+          y - 15,
+          `${status} ${name}`,
+          {
+            ...textStyle,
 
-    this.add
-      .text(
-        x,
-        y + 22,
-        unlocked ? "Unlocked" : "Locked",
-        {
-          fontSize: "16px",
-          color: unlocked ? "#ffffff" : "#888888",
-        }
-      )
-      .setOrigin(0.5);
+            fontSize: "22px",
 
-    background.on("pointerover", () => {
-      background.setScale(1.08);
+            color: unlocked
+              ? "#fcc844"
+              : "#777777",
+          }
+        )
+        .setOrigin(0.5);
 
-      this.descriptionText.setText(
-        unlocked
-          ? description
-          : `LOCKED: ${description}`
-      );
-    });
+    const unlockText =
+      this.add
+        .text(
+          x,
+          y + 22,
+          unlocked
+            ? "Unlocked"
+            : "Locked",
+          {
+            ...textStyle,
 
-    background.on("pointerout", () => {
-      background.setScale(1);
+            fontSize: "16px",
 
-      this.descriptionText.setText(
-        "Hover over an achievement to see its description."
-      );
-    });
+            color: unlocked
+              ? "#fff1a8"
+              : "#666666",
+          }
+        )
+        .setOrigin(0.5);
+
+    hitArea.on(
+      "pointerover",
+      () => {
+        titleText.setScale(1.08);
+        unlockText.setScale(1.08);
+
+        this.descriptionText.setText(
+          unlocked
+            ? description
+            : `LOCKED: ${description}`
+        );
+      }
+    );
+
+    hitArea.on(
+      "pointerout",
+      () => {
+        titleText.setScale(1);
+        unlockText.setScale(1);
+
+        this.descriptionText.setText(
+          "Hover over an achievement to see its description."
+        );
+      }
+    );
   }
 }
