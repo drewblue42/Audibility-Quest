@@ -97,12 +97,12 @@ export default class Fight extends Phaser.Scene {
     })
 
     const dragonIdleUrl = new URL(
-      "../assets/animations/Dragon/ShadowDragon/Animations/Idle_Right/Idle_right.png",
+      "../assets/animations/Dragon/ShadowDragon/Animations/Idle_Right/Idle_Right.png",
       import.meta.url
     ).href;
 
     const dragonAttackUrl = new URL(
-      "../assets/animations/Dragon/ShadowDragon/Animations/Attack_Right/Attack_right.png",
+      "../assets/animations/Dragon/ShadowDragon/Animations/Attack_Right/Attack_Right.png",
 
       import.meta.url
     ).href;
