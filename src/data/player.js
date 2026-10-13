@@ -1,8 +1,8 @@
 export function createPlayer() {
     return {
-      health: 1,
+      health: 100,
       maxHealth: 100,
-      stamina: 1,
+      stamina: 3,
       maxStamina: 3,
       inventory: [],
       textureKey: "kiraIdle",

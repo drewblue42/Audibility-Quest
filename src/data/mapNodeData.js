@@ -47,10 +47,10 @@ export const maps = [
 
       // First split
       { id: 1, x: 125, y: 235, type: "fight", isCheckpoint: false },
-      { id: 2, x: 110, y: 405, type: "treasure", isCheckpoint: false },
+      { id: 2, x: 110, y: 405, type: "fight", isCheckpoint: false },
 
       // Upper branch
-      { id: 3, x: 215, y: 190, type: "camp", isCheckpoint: false },
+      { id: 3, x: 215, y: 190, type: "fight", isCheckpoint: false },
 
       { id: 4, x: 350, y: 125, type: "fight", isCheckpoint: false },
       { id: 5, x: 425, y: 130, type: "fight", isCheckpoint: false },
@@ -69,7 +69,7 @@ export const maps = [
       { id: 16, x: 650, y: 235, type: "fight", isCheckpoint: false },
 
       // Blue colored node -> campsite
-      { id: 17, x: 725, y: 235, type: "camp", isCheckpoint: false },
+      { id: 17, x: 725, y: 235, type: "treasure", isCheckpoint: false },
 
       // Diamond after blue campsite
       { id: 18, x: 875, y: 130, type: "fight", isCheckpoint: false },
@@ -84,7 +84,7 @@ export const maps = [
       // Middle branch from starting split
       { id: 24, x: 195, y: 345, type: "fight", isCheckpoint: false },
       { id: 25, x: 275, y: 350, type: "fight", isCheckpoint: false },
-      { id: 26, x: 350, y: 350, type: "boss", isCheckpoint: false },
+      { id: 26, x: 350, y: 350, type: "fight", isCheckpoint: false },
 
       { id: 27, x: 500, y: 415, type: "fight", isCheckpoint: false },
       { id: 28, x: 575, y: 395, type: "fight", isCheckpoint: false },

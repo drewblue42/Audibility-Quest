@@ -877,8 +877,13 @@ export default class Fight extends Phaser.Scene {
     const startX =
       target.x + Phaser.Math.Between(-15, 15);
 
-    const startY =
-      target.y - target.displayHeight * 0.25;
+      const verticalOffset = Math.min(
+        target.displayHeight * 0.25,
+        140
+      );
+      
+      const startY =
+        target.y - verticalOffset;
 
     const damageNumber = this.add
       .text(

@@ -3,9 +3,7 @@ Towson University Project: User will travel through a dungeon fighting monsters.
 
 
 TODO:
-- Add back button to instructions (Done)
-- 5 sentences/ five rounds per fight (Done)
-- Cause a GameOver, do not let the player continue with zero health.
+- Fix boss animation for damage popup
 - 
 
 
