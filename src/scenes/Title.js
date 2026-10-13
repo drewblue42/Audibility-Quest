@@ -19,7 +19,7 @@ export default class Title extends Phaser.Scene {
     ).toString();
 
     const musicUrl = new URL(
-      "../assets/audio/Road To Camelot.mp3",
+      "../assets/audio/Road to Camelot.mp3",
       import.meta.url
     ).toString();
 
