@@ -34,6 +34,7 @@
  * connections:
  *   Defines which nodes are connected.
  */
+
 export const maps = [
   {
     id: "map-1",
@@ -68,10 +69,10 @@ export const maps = [
       { id: 15, x: 575, y: 305, type: "fight", isCheckpoint: false },
       { id: 16, x: 650, y: 235, type: "fight", isCheckpoint: false },
 
-      // Blue colored node -> campsite
+      // Treasure
       { id: 17, x: 725, y: 235, type: "treasure", isCheckpoint: false },
 
-      // Diamond after blue campsite
+      // Diamond after treasure
       { id: 18, x: 875, y: 130, type: "fight", isCheckpoint: false },
       { id: 19, x: 875, y: 235, type: "fight", isCheckpoint: false },
       { id: 20, x: 950, y: 205, type: "fight", isCheckpoint: false },
@@ -107,7 +108,7 @@ export const maps = [
       { id: 43, x: 800, y: 535, type: "fight", isCheckpoint: false },
       { id: 44, x: 875, y: 480, type: "fight", isCheckpoint: false },
 
-      // Green colored node -> campsite
+      // Camp
       { id: 45, x: 950, y: 440, type: "camp", isCheckpoint: false },
 
       // Lower-right diamond
@@ -118,8 +119,11 @@ export const maps = [
       // Final merge
       { id: 49, x: 1165, y: 405, type: "fight", isCheckpoint: false },
 
-      // Red colored node -> campsite
+      // Boss = fight #15
       { id: 50, x: 1230, y: 395, type: "boss", isCheckpoint: false },
+
+      // NEW fight node used to bring shorter lower route up to 15 fights
+      { id: 51, x: 995, y: 415, type: "fight", isCheckpoint: false },
     ],
 
     connections: [
@@ -149,7 +153,7 @@ export const maps = [
       { from: 15, to: 16 },
       { from: 16, to: 17 },
 
-      // Blue camp merges back
+      // Treasure merges back
       { from: 17, to: 10 },
 
       // Diamond
@@ -159,9 +163,25 @@ export const maps = [
       { from: 18, to: 20 },
       { from: 19, to: 20 },
 
-      // Upper-right
+      // Upper-right route
+      //
+      // Changed so player chooses 21 OR 22.
+      // Previously the route forced:
+      //
+      // 20 -> 21 -> 22 -> 23
+      //
+      // which made these routes one fight too long.
+      //
+      // Now:
+      //
+      //        -> 21 ->
+      // 20              23
+      //        -> 22 ->
+      //
       { from: 20, to: 21 },
-      { from: 21, to: 22 },
+      { from: 20, to: 22 },
+
+      { from: 21, to: 23 },
       { from: 22, to: 23 },
 
       // Middle branch
@@ -197,14 +217,23 @@ export const maps = [
       { from: 42, to: 43 },
       { from: 43, to: 44 },
 
-      // Lower path can reconnect upward
-      { from: 42, to: 31 },
+      // Removed:
+      //
+      // { from: 42, to: 31 }
+      //
+      // That crossover created 16-fight routes.
 
-      // Green campsite
+      // Camp
       { from: 44, to: 45 },
 
-      // Green camp splits
-      { from: 45, to: 46 },
+      // Camp split
+      //
+      // The 46 route was one fight shorter,
+      // so it now passes through new fight node 51.
+      { from: 45, to: 51 },
+      { from: 51, to: 46 },
+
+      // Other branch already had the correct number of fights
       { from: 45, to: 47 },
 
       // Middle route reaches upper side of diamond
@@ -212,18 +241,19 @@ export const maps = [
 
       // Diamond rejoins
       { from: 46, to: 49 },
+
       { from: 47, to: 48 },
       { from: 48, to: 49 },
 
-      // Upper route also merges near end
+      // Upper route merges near end
       { from: 23, to: 49 },
 
-      // Final campsite
+      // Final boss
       { from: 49, to: 50 },
     ],
   },
 ];
 
-  export function getMapById(mapId) {
-    return maps.find((map) => map.id === mapId);
-  }
+export function getMapById(mapId) {
+  return maps.find((map) => map.id === mapId);
+}
