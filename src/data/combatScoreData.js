@@ -27,7 +27,7 @@
 export const COMBAT_SCORE_DATA = [
     {
       input: 0,
-      monsterDamage: 0,
+      monsterDamage: 1,
       playerDamage: 5,
       behavior: "miss",
       message: `The player attacks, and takes 5 points of damage!`,

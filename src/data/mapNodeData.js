@@ -51,7 +51,6 @@ export const maps = [
 
       // Upper branch
       { id: 3, x: 215, y: 190, type: "fight", isCheckpoint: false },
-
       { id: 4, x: 350, y: 125, type: "fight", isCheckpoint: false },
       { id: 5, x: 425, y: 130, type: "fight", isCheckpoint: false },
       { id: 6, x: 500, y: 160, type: "fight", isCheckpoint: false },
@@ -105,10 +104,10 @@ export const maps = [
       { id: 41, x: 650, y: 545, type: "fight", isCheckpoint: false },
       { id: 42, x: 725, y: 530, type: "fight", isCheckpoint: false },
       { id: 43, x: 800, y: 535, type: "fight", isCheckpoint: false },
-      { id: 44, x: 875, y: 480, type: "fight", isCheckpoint: false },
+      { id: 44, x: 925, y: 480, type: "fight", isCheckpoint: false },
 
       // Green colored node -> campsite
-      { id: 45, x: 950, y: 440, type: "camp", isCheckpoint: false },
+      { id: 45, x: 980, y: 440, type: "camp", isCheckpoint: false },
 
       // Lower-right diamond
       { id: 46, x: 1025, y: 390, type: "fight", isCheckpoint: false },
@@ -120,6 +119,20 @@ export const maps = [
 
       // Red colored node -> campsite
       { id: 50, x: 1230, y: 395, type: "boss", isCheckpoint: false },
+
+
+
+      // { id: 46, x: 1025, y: 390, type: "fight", isCheckpoint: false },
+      
+      // { id: 49, x: 1165, y: 405, type: "fight", isCheckpoint: false },
+
+      //new additions
+      {id: 51, x: 425, y: 385, type: "fight", isCheckpoint: false},
+      {id: 52, x: 644, y: 335, type: "fight", isCheckpoint: false},
+      {id: 53, x: 862, y: 500, type: "fight", isCheckpoint: false},
+      {id: 54, x: 1098, y: 397, type: "fight", isCheckpoint: false},
+
+
     ],
 
     connections: [
@@ -169,7 +182,11 @@ export const maps = [
       { from: 24, to: 25 },
       { from: 25, to: 26 },
 
-      { from: 26, to: 27 },
+      
+
+      { from: 26, to: 51},
+      //new connection
+      {from: 51, to:27 },
       { from: 27, to: 28 },
       { from: 28, to: 29 },
       { from: 29, to: 30 },
@@ -179,8 +196,9 @@ export const maps = [
       { from: 33, to: 34 },
 
       // Middle joins upper route
-      { from: 15, to: 30 },
 
+      { from: 15, to: 52 },
+      { from: 52, to: 30 },
       // Lower path
       { from: 2, to: 35 },
       { from: 35, to: 36 },
@@ -195,7 +213,8 @@ export const maps = [
       { from: 40, to: 41 },
       { from: 41, to: 42 },
       { from: 42, to: 43 },
-      { from: 43, to: 44 },
+      { from: 43, to: 53 },
+      { from: 53, to: 44 },
 
       // Lower path can reconnect upward
       { from: 42, to: 31 },
@@ -211,7 +230,9 @@ export const maps = [
       { from: 34, to: 46 },
 
       // Diamond rejoins
-      { from: 46, to: 49 },
+      { from: 46, to: 54 },
+      {from: 54, to:49},
+
       { from: 47, to: 48 },
       { from: 48, to: 49 },
 
@@ -220,6 +241,8 @@ export const maps = [
 
       // Final campsite
       { from: 49, to: 50 },
+
+
     ],
   },
 ];

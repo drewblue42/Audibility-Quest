@@ -71,7 +71,7 @@ export default class NodeMap extends Phaser.Scene {
     }
 
     create() {
-        
+
         const mapData = getMapById(this.mapId);
 
         if (!mapData) {
@@ -250,6 +250,22 @@ export default class NodeMap extends Phaser.Scene {
         const icon = this.add
             .image(x, y, iconKey)
             .setDisplaySize(42, 42);
+
+        //text to observe node id number for a more visual way to see nodes and their connetions.
+        // this.add.text(
+        //     x,
+        //     y,
+        //     `${node.id}`,
+        //     {
+        //         fontSize: "20px",
+        //         color: "#ffffff",
+        //         fontStyle: "bold",
+        //         stroke: "#000000",
+        //         strokeThickness: 3,
+
+        //     }
+        // ).setOrigin(0.5);
+
         if (isAvailable) {
             icon.setInteractive({ useHandCursor: true });
 
@@ -338,7 +354,7 @@ export default class NodeMap extends Phaser.Scene {
                     }
                     )
                 }
-                console.log("CURRENT NODE: "+ RunState.progress.currentNodeId)
+                console.log("CURRENT NODE: " + RunState.progress.currentNodeId)
                 break;
 
             case "camp":
@@ -348,7 +364,7 @@ export default class NodeMap extends Phaser.Scene {
                     mapId: RunState.progress.currentMapId,
                     returnTo: "nodeMap",
                 });
-                console.log("CURRENT NODE: "+ RunState.progress.currentNodeId)
+                console.log("CURRENT NODE: " + RunState.progress.currentNodeId)
                 RunState.completeNode(node.id);
                 break;
 
@@ -359,7 +375,7 @@ export default class NodeMap extends Phaser.Scene {
                     mapId: RunState.progress.currentMapId,
                     returnTo: "nodeMap",
                 });
-                console.log("CURRENT NODE: "+ RunState.progress.currentNodeId)
+                console.log("CURRENT NODE: " + RunState.progress.currentNodeId)
                 RunState.completeNode(node.id);
                 break;
 
@@ -371,7 +387,7 @@ export default class NodeMap extends Phaser.Scene {
                     encounterType: "boss",
                     returnTo: "nodeMap",
                 });
-                console.log("CURRENT NODE: "+ RunState.progress.currentNodeId)
+                console.log("CURRENT NODE: " + RunState.progress.currentNodeId)
                 RunState.completeNode(node.id);
                 break;
 
